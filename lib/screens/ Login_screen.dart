@@ -9,7 +9,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
-
+   // Added comment at top
+   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
