@@ -1,82 +1,118 @@
 import 'package:flutter/material.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+
+  double batteryLevel = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _animateBattery();
+  }
+
+  void _animateBattery() {
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      for (double i = 0; i <= 1; i += 0.02) {
+        await Future.delayed(const Duration(milliseconds: 50));
+        setState(() {
+          batteryLevel = i;
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFE0F7FA), Color(0xFFB2EBF2)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+    return GestureDetector(
+      onTap: () {
+        // Navigate to login screen
+        Navigator.pushReplacementNamed(context, "/onboarding");
+
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+
+              // Medical Shield Icon
+              Container(
+                padding: const EdgeInsets.all(25),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.blue.shade50,
+                ),
+                child: Icon(
+                  Icons.health_and_safety,
+                  size: 80,
+                  color: Colors.blue.shade800,
+                ),
               ),
-            ),
-          ),
-          Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
+
+              const SizedBox(height: 30),
+
+              // App Title
+              const Text(
+                "Your Health, Simplified.",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+
+              const SizedBox(height: 40),
+              Container(
+                width: 180,
+                height: 35,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blue, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Stack(
+                  children: [
+                    FractionallySizedBox(
+                      widthFactor: batteryLevel,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
                       ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.health_and_safety_rounded,
-                    size: 80,
-                    color: Colors.blue,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Your Health, Simplified.',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 50,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/onboarding');
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  backgroundColor: Colors.blue,
-                ),
-                child: const Text(
-                  'Proceed',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ],
                 ),
               ),
-            ),
+
+              const SizedBox(height: 10),
+              Text(
+                "${(batteryLevel * 100).toInt()}%",
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+
+              const SizedBox(height: 30),
+
+              Text(
+                "Tap to continue",
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 15,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

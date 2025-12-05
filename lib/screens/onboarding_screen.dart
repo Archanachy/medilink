@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -8,120 +9,105 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
+  final PageController _controller = PageController();
+  int currentIndex = 0;
 
-  final List<Map<String, String>> _onboardingData = [
-    {
-      "image": "https://via.placeholder.com/300",
-      "title": "Find Doctors Easily",
-      "description": "Search and connect with certified doctors anytime, anywhere."
-    },
-    {
-      "image": "https://via.placeholder.com/300",
-      "title": "Book Appointments",
-      "description": "Schedule appointments with your preferred doctors quickly."
-    },
-    {
-      "image": "https://via.placeholder.com/300",
-      "title": "Keep Track of Health Records",
-      "description": "Store and access all your medical records securely."
-    },
+  final List<String> titles = [
+    "Welcome to MediLink",
+    "Easy Appointments",
+    "Your Health, Simplified",
+  ];
+
+  final List<String> subtitles = [
+    "Connecting you to trusted healthcare.",
+    "Schedule visits with one click.",
+    "All your health info in one place.",
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            itemCount: _onboardingData.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.network(
-                      _onboardingData[index]['image']!,
-                      height: 300,
-                    ),
-                    const SizedBox(height: 40),
-                    Text(
-                      _onboardingData[index]['title']!,
-                      style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      _onboardingData[index]['description']!,
-                      style: const TextStyle(fontSize: 16, color: Colors.black54),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+      body: PageView.builder(
+        controller: _controller,
+        itemCount: titles.length,
+        onPageChanged: (index) {
+          setState(() => currentIndex = index);
+        },
+        itemBuilder: (context, index) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              
+
+              Text(
+                titles[index],
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-            },
-          ),
-          Positioned(
-            bottom: 100,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                _onboardingData.length,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 5),
-                  height: 10,
-                  width: _currentPage == index ? 20 : 10,
-                  decoration: BoxDecoration(
-                    color: _currentPage == index ? Colors.blue : Colors.grey,
-                    borderRadius: BorderRadius.circular(5),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                subtitles[index],
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: currentIndex == titles.length - 1
+            ? ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  );
+                },
+                child: const Text("Get Started"),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      _controller.jumpToPage(titles.length - 1);
+                    },
+                    child: const Text("Skip"),
                   ),
-                ),
+
+                  Row(
+                    children: List.generate(titles.length, (index) {
+                      return Container(
+                        margin: const EdgeInsets.all(4),
+                        width: currentIndex == index ? 12 : 8,
+                        height: currentIndex == index ? 12 : 8,
+                        decoration: BoxDecoration(
+                          color: currentIndex == index ? Colors.blue : Colors.grey,
+                          shape: BoxShape.circle,
+                        ),
+                      );
+                    }),
+                  ),
+
+                  TextButton(
+                    onPressed: () {
+                      _controller.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                    child: const Text("Next"),
+                  ),
+                ],
               ),
-            ),
-          ),
-          Positioned(
-            bottom: 40,
-            left: 24,
-            right: 24,
-            child: ElevatedButton(
-              onPressed: () {
-                if (_currentPage == _onboardingData.length - 1) {
-                  Navigator.pushReplacementNamed(context, '/login');
-                } else {
-                  _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeIn);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                _currentPage == _onboardingData.length - 1
-                    ? 'Get Started'
-                    : 'Next',
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
