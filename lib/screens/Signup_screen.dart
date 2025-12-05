@@ -1,149 +1,118 @@
 import 'package:flutter/material.dart';
 
-class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
-  bool _obscurePassword = true;
-  bool _agreeTerms = false;
+class _SignupScreenState extends State<SignupScreen> {
+  bool hidePass = true;
+  bool agree = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 50),
+      appBar: AppBar(
+        leading: BackButton(
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            const SizedBox(height: 20),
+
             const Text(
-              'Create Your Account',
-              style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87),
+              "Create Your Account",
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 30),
-            TextField(
+
+            const SizedBox(height: 25),
+
+            const TextField(
               decoration: InputDecoration(
-                labelText: 'Full Name',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.person),
+                labelText: "Full Name",
+                prefixIcon: Icon(Icons.person),
               ),
             ),
-            const SizedBox(height: 20),
-            TextField(
-              keyboardType: TextInputType.emailAddress,
+
+            const SizedBox(height: 15),
+
+            const TextField(
               decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.email),
+                labelText: "Email",
+                prefixIcon: Icon(Icons.email),
               ),
             ),
-            const SizedBox(height: 20),
+
+            const SizedBox(height: 15),
+
             TextField(
-              obscureText: _obscurePassword,
+              obscureText: hidePass,
               decoration: InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                labelText: "Password",
                 prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
-                  icon: Icon(_obscurePassword
-                      ? Icons.visibility
-                      : Icons.visibility_off),
+                  icon: Icon(hidePass
+                      ? Icons.visibility_off
+                      : Icons.visibility),
                   onPressed: () {
                     setState(() {
-                      _obscurePassword = !_obscurePassword;
+                      hidePass = !hidePass;
                     });
                   },
                 ),
               ),
             ),
+
             const SizedBox(height: 20),
+
             Row(
               children: [
                 Checkbox(
-                  value: _agreeTerms,
-                  onChanged: (value) {
+                  value: agree,
+                  onChanged: (val) {
                     setState(() {
-                      _agreeTerms = value!;
+                      agree = val!;
                     });
                   },
                 ),
-                Flexible(
-                  child: RichText(
-                    text: const TextSpan(
-                      text: 'I agree to the ',
-                      style: TextStyle(color: Colors.black87),
-                      children: [
-                        TextSpan(
-                          text: 'Terms of Service',
-                          style: TextStyle(color: Colors.blue),
-                        ),
-                        TextSpan(text: ' and '),
-                        TextSpan(
-                          text: 'Privacy Policy',
-                          style: TextStyle(color: Colors.blue),
-                        ),
-                      ],
-                    ),
+                const Expanded(
+                  child: Text(
+                    "I agree to the Terms of Service and Privacy Policy",
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _agreeTerms
-                    ? () {
-                        Navigator.pushReplacementNamed(context, '/dashboard');
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: () {
+                if (!agree) return;
+
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              child: const Text("Sign Up"),
+            ),
+
+            const SizedBox(height: 20),
+
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
                 child: const Text(
-                  'Sign Up',
-                  style: TextStyle(fontSize: 18),
+                  "Already have an account? Log In",
+                  style: TextStyle(color: Colors.blue),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Already have an account?'),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/login');
-                  },
-                  child: const Text(
-                    'Log In',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ],
-            ),
+            )
           ],
         ),
       ),
