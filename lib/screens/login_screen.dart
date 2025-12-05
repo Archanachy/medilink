@@ -1,86 +1,85 @@
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
-
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  bool hidePass = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "Welcome Back",
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-            ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          bool isTablet = constraints.maxWidth > 600;
 
-            const SizedBox(height: 30),
+          return Center(
+            child: Container(
+              width: isTablet ? 500 : double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 40 : 20,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Welcome Back",
+                    style: TextStyle(
+                      fontSize: isTablet ? 32 : 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
 
-            TextField(
-              decoration: const InputDecoration(
-                labelText: "Email",
-                prefixIcon: Icon(Icons.email),
+                  SizedBox(height: isTablet ? 40 : 20),
+
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: "Email",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  SizedBox(height: isTablet ? 30 : 20),
+
+                  TextField(
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: "Password",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  SizedBox(height: isTablet ? 30 : 20),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/dashboard');
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.all(isTablet ? 20 : 14),
+                        child: Text(
+                          "Login",
+                          style: TextStyle(fontSize: isTablet ? 22 : 18),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/signup');
+                    },
+                    child: Text(
+                      "Create an account",
+                      style: TextStyle(fontSize: isTablet ? 20 : 16),
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 15),
-
-            TextField(
-              obscureText: hidePass,
-              decoration: InputDecoration(
-                labelText: "Password",
-                prefixIcon: const Icon(Icons.lock),
-                suffixIcon: IconButton(
-                  icon: Icon(hidePass
-                      ? Icons.visibility_off
-                      : Icons.visibility),
-                  onPressed: () {
-                    setState(() {
-                      hidePass = !hidePass;
-                    });
-                  },
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            const Align(
-              alignment: Alignment.centerRight,
-              child: Text("Forgot Password?"),
-            ),
-
-            const SizedBox(height: 25),
-
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/dashboard');
-              },
-              child: const Text("Log In"),
-            ),
-
-            const SizedBox(height: 20),
-
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, '/signup');
-              },
-              child: const Text(
-                "Don't have an account? Sign Up",
-                style: TextStyle(color: Colors.blue),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
