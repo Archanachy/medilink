@@ -1,43 +1,118 @@
 import 'package:flutter/material.dart';
 
-class SignupScreen extends StatelessWidget {
-  const SignupScreen({Key? key}) : super(key: key);
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
+
+  @override
+  State<SignupScreen> createState() => _SignupScreenState();
+}
+
+class _SignupScreenState extends State<SignupScreen> {
+  bool hidePass = true;
+  bool agree = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Sign Up')),
+      appBar: AppBar(
+        leading: BackButton(
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
+
+            const Text(
+              "Create Your Account",
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 25),
+
+            const TextField(
               decoration: InputDecoration(
-                labelText: 'Name',
-                border: OutlineInputBorder(),
+                labelText: "Full Name",
+                prefixIcon: Icon(Icons.person),
               ),
             ),
-            SizedBox(height: 16),
-            TextField(
+
+            const SizedBox(height: 15),
+
+            const TextField(
               decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
+                labelText: "Email",
+                prefixIcon: Icon(Icons.email),
               ),
             ),
-            SizedBox(height: 16),
+
+            const SizedBox(height: 15),
+
             TextField(
+              obscureText: hidePass,
               decoration: InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
+                labelText: "Password",
+                prefixIcon: const Icon(Icons.lock),
+                suffixIcon: IconButton(
+                  icon: Icon(hidePass
+                      ? Icons.visibility_off
+                      : Icons.visibility),
+                  onPressed: () {
+                    setState(() {
+                      hidePass = !hidePass;
+                    });
+                  },
+                ),
               ),
-              obscureText: true,
             ),
-            SizedBox(height: 24),
+
+            const SizedBox(height: 20),
+
+            Row(
+              children: [
+                Checkbox(
+                  value: agree,
+                  onChanged: (val) {
+                    setState(() {
+                      agree = val!;
+                    });
+                  },
+                ),
+                const Expanded(
+                  child: Text(
+                    "I agree to the Terms of Service and Privacy Policy",
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
             ElevatedButton(
-              onPressed: () {},
-              child: Text('Sign Up'),
+              onPressed: () {
+                if (!agree) return;
+
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              child: const Text("Sign Up"),
             ),
+
+            const SizedBox(height: 20),
+
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+                child: const Text(
+                  "Already have an account? Log In",
+                  style: TextStyle(color: Colors.blue),
+                ),
+              ),
+            )
           ],
         ),
       ),

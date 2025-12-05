@@ -1,46 +1,83 @@
 import 'package:flutter/material.dart';
-import 'Signup_screen.dart';
-import 'dashboard_screen.dart';
 
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  bool hidePass = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              decoration: InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+            const Text(
+              "Welcome Back",
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
+
+            const SizedBox(height: 30),
+
             TextField(
-              decoration: InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
-              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: "Email",
+                prefixIcon: Icon(Icons.email),
+              ),
             ),
-            SizedBox(height: 24),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              obscureText: hidePass,
+              decoration: InputDecoration(
+                labelText: "Password",
+                prefixIcon: const Icon(Icons.lock),
+                suffixIcon: IconButton(
+                  icon: Icon(hidePass
+                      ? Icons.visibility_off
+                      : Icons.visibility),
+                  onPressed: () {
+                    setState(() {
+                      hidePass = !hidePass;
+                    });
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            const Align(
+              alignment: Alignment.centerRight,
+              child: Text("Forgot Password?"),
+            ),
+
+            const SizedBox(height: 25),
+
             ElevatedButton(
-              child: Text('Login'),
               onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => DashboardScreen()),
-                );
+                Navigator.pushReplacementNamed(context, '/dashboard');
               },
+              child: const Text("Log In"),
             ),
-            TextButton(
-              child: Text('Sign Up'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => SignupScreen()),
-                );
+
+            const SizedBox(height: 20),
+
+            GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/signup');
               },
+              child: const Text(
+                "Don't have an account? Sign Up",
+                style: TextStyle(color: Colors.blue),
+              ),
             ),
           ],
         ),

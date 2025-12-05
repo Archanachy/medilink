@@ -1,35 +1,28 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
+      backgroundColor: Colors.white,
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Welcome to MediLink',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Icon(Icons.health_and_safety, size: 100, color: Colors.blue),
+            const SizedBox(height: 20),
+            const Text(
+              "Your Health, Simplified.",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
             ),
-            SizedBox(height: 24),
-            Text(
-              'Online Doctor Consultation & Prescription App',
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             ElevatedButton(
-              child: Text('Get Started'),
               onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => LoginScreen()),
-                );
+                Navigator.pushReplacementNamed(context, '/login');
               },
+              child: const Text("Click to Proceed"),
             ),
           ],
         ),
