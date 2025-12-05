@@ -8,19 +8,35 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Navigate to Onboarding after 3 seconds
+    // Get device width
+    final width = MediaQuery.of(context).size.width;
+
+    // Navigate after 3 seconds
     Timer(Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => OnboardingScreen()),
-      );
+      if (width > 600) {
+        // Tablet: skip onboarding
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => LoginScreen()),
+        );
+      } else {
+        // Mobile: show onboarding
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => OnboardingScreen()),
+        );
+      }
     });
 
     return Scaffold(
       body: Center(
         child: Text(
           'MediLink',
-          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.blue,
+          ),
         ),
       ),
     );
