@@ -28,7 +28,7 @@ class SignupScreen extends StatelessWidget {
                 SizedBox(height: isTablet ? 30 : 20),
 
                 TextField(
-                  decoration: InputDecoration(
+                  decoration : InputDecoration(
                     labelText: "Name",
                     border: OutlineInputBorder(),
                   ),

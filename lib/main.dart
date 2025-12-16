@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medilink/themes/theme_data.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/login_screen.dart';
@@ -17,6 +18,7 @@ class MediLinkApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'MediLink',
+      theme: getApplicationTheme(),
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),

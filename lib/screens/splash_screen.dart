@@ -20,23 +20,28 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _animateBattery() {
     Future.delayed(const Duration(milliseconds: 500), () async {
-      for (double i = 0; i <= 1; i += 0.02) {
+      for (double i = 0; i <= 1.02; i += 0.02) {
         await Future.delayed(const Duration(milliseconds: 50));
         setState(() {
           batteryLevel = i;
         });
       }
+      // After animation completes, navigate to login screen
+      //delay for 2 seconds
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      Navigator.pushReplacementNamed(context,"/onboarding");
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // Navigate to login screen
-        Navigator.pushReplacementNamed(context, "/onboarding");
+      // onTap: () {
+      //   // Navigate to login screen
+      //   Navigator.pushReplacementNamed(context, "/onboarding");
 
-      },
+      // },
       child: Scaffold(
         backgroundColor: Colors.white,
         body: Center(
@@ -103,13 +108,8 @@ class _SplashScreenState extends State<SplashScreen>
 
               const SizedBox(height: 30),
 
-              Text(
-                "Tap to continue",
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 15,
-                ),
-              ),
+             
+              
             ],
           ),
         ),

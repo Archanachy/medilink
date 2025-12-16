@@ -16,10 +16,10 @@ class DashboardScreen extends StatelessWidget {
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [BoxShadow(blurRadius: 8, color: Colors.black12)],
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
-            _NavItem(icon: Icons.search, label: 'Home'),
+          children: [
+            _NavItem(icon: Icons.home_outlined, label: 'Home'),
             _NavItem(icon: Icons.calendar_month, label: 'Appointments'),
             _NavItem(icon: Icons.description, label: 'Records'),
             _NavItem(icon: Icons.history, label: 'Activity'),
@@ -34,14 +34,14 @@ class DashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 👤 HEADER FIXED
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    children: const [
+                    children:[
                       CircleAvatar(
                         radius: 22,
-                        backgroundImage: AssetImage('assets/images/doctor1.png'),
+                        backgroundImage: AssetImage('assets/images/doctor1.jpg'),
                       ),
                       SizedBox(width: 12),
                       Text(
@@ -50,7 +50,7 @@ class DashboardScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const Icon(Icons.notifications_none, size: 28),
+                  Icon(Icons.notifications_none, size: 28),
                 ],
               ),
 
@@ -128,7 +128,11 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _NavItem({required this.icon, required this.label});
+  const _NavItem({
+    Key? key,
+    required this.icon,
+    required this.label,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +149,7 @@ class _NavItem extends StatelessWidget {
 
 // Appointment Card
 class _AppointmentCard extends StatelessWidget {
-  const _AppointmentCard();
+  const _AppointmentCard({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -156,16 +160,17 @@ class _AppointmentCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [BoxShadow(blurRadius: 8, color: Colors.black12)],
       ),
-      child: Column(
+      child:Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text('Upcoming Appointment',
+        children:[
+          Center(child: Image.asset('assets/images/doctor2.jpg')),
+          const Text('Upcoming Appointment',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-          SizedBox(height: 4),
-          Text('With Dr. Evelyn Reed',
+          const SizedBox(height: 4),
+          const Text('With Dr. Evelyn Reed',
               style: TextStyle(fontSize: 14, color: Colors.grey)),
-          SizedBox(height: 6),
-          Row(
+          const SizedBox(height: 6),
+          const Row(
             children: [
               Icon(Icons.calendar_today, size: 16, color: Colors.grey),
               SizedBox(width: 6),
@@ -186,10 +191,11 @@ class _ActionButton extends StatelessWidget {
   final int? badgeCount;
 
   const _ActionButton({
+    Key? key,
     required this.icon,
     required this.label,
     this.badgeCount,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
