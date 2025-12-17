@@ -7,9 +7,10 @@ class AppointmentsBottomScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text(
-        'Appointments Screennnnnnn',
+        'Appointments Screen',
         style: TextStyle(fontSize: 22),
       ),
     );
+    
   }
 }

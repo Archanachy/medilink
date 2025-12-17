@@ -58,8 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Activity',
           ),
         ],
-        //  bottom navigation integration
-
+        
       ),
     );
   }
