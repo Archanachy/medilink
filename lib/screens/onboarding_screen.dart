@@ -11,14 +11,23 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int currentIndex = 0;
+  final List<String> images = [
+      "assets/images/welcome to medilink logo (1).jpg",
+   "assets/images/esay appointments image for onboarding screen (1).jpg",
+"assets/images/esay appointments image for onboarding screen.jpg",
+
+  ];
+
 
   final List<String> titles = [
+    
     "Welcome to MediLink",
     "Easy Appointments",
     "Your Health, Simplified",
   ];
 
   final List<String> subtitles = [
+
     "Connecting you to trusted healthcare.",
     "Schedule visits with one click.",
     "All your health info in one place.",
@@ -27,7 +36,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: PageView.builder(
+        
         controller: _controller,
         itemCount: titles.length,
         onPageChanged: (index) {
@@ -35,8 +46,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         },
         itemBuilder: (context, index) {
           return Column(
+            
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+            children:[
+
+              Image.asset(
+                images[index],
+                height: 300,
+              ),
               
 
               Text(
