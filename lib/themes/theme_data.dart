@@ -31,5 +31,8 @@ ThemeData getApplicationTheme() {
      
     ),
     scaffoldBackgroundColor: Colors.white,
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: Colors.white,
+    ),
   );
 }
