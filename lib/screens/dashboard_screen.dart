@@ -23,23 +23,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: _screens[_currentIndex],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 👉 Tablet check
+        if (constraints.maxWidth >= 600) {
+          return _buildTabletLayout();
+        } else {
+          return _buildMobileLayout();
+        }
+      },
+    );
+  }
 
+  // 📱 MOBILE UI (Bottom Navigation)
+  Widget _buildMobileLayout() {
+    return Scaffold(
+      body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        backgroundColor: const Color.fromARGB(255, 235, 208, 240),
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: const Color.fromARGB(255, 97, 96, 96),
-
+        unselectedItemColor: Colors.grey,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -58,7 +67,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Activity',
           ),
         ],
-        
+      ),
+    );
+  }
+
+  // 📱 TABLET UI (Navigation Rail)
+  Widget _buildTabletLayout() {
+    return Scaffold(
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: _currentIndex,
+            onDestinationSelected: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            labelType: NavigationRailLabelType.all,
+            destinations: const [
+              NavigationRailDestination(
+                icon: Icon(Icons.home_outlined),
+                label: Text('Home'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.calendar_month),
+                label: Text('Appointments'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.description),
+                label: Text('Records'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.history),
+                label: Text('Activity'),
+              ),
+            ],
+          ),
+          const VerticalDivider(thickness: 1, width: 1),
+          Expanded(
+            child: _screens[_currentIndex],
+          ),
+        ],
       ),
     );
   }
