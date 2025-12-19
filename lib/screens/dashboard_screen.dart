@@ -10,7 +10,6 @@ class DashboardScreen extends StatefulWidget {
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
-//if (constraints.maxWidth >= tabletBreakpoint) {
 
 
 class _DashboardScreenState extends State<DashboardScreen> {
@@ -107,7 +106,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
-            child: _screens[_currentIndex],
+            child: SafeArea(
+  child: _screens[_currentIndex],
+),
+
           ),
         ],
       ),
