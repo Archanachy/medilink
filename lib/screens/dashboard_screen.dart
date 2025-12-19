@@ -106,10 +106,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
-            child: SafeArea(
-  child: _screens[_currentIndex],
-),
-
+            child: _screens[_currentIndex],
           ),
         ],
       ),
