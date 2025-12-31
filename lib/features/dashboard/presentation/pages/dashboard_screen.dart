@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:medilink/screens/bottom/acitivity_bottom_screen.dart';
-import 'package:medilink/screens/bottom/appointments_bottom_screen.dart';
-import 'package:medilink/screens/bottom/home_bottom_screen.dart';
-import 'package:medilink/screens/bottom/record_bottom_screen.dart';
+import 'package:medilink/features/dashboard/presentation/pages/bottom/acitivity_bottom_screen.dart';
+import 'package:medilink/features/dashboard/presentation/pages/bottom/appointments_bottom_screen.dart';
+import 'package:medilink/features/dashboard/presentation/pages/bottom/home_bottom_screen.dart';
+import 'package:medilink/features/dashboard/presentation/pages/bottom/record_bottom_screen.dart';
+
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

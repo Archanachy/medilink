@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatelessWidget {
-   const SignupScreen({super.key});
+  const SignupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,37 +24,29 @@ class SignupScreen extends StatelessWidget {
                       fontSize: isTablet ? 30 : 24,
                       fontWeight: FontWeight.bold,
                     )),
-
                 SizedBox(height: isTablet ? 30 : 20),
-
-                TextField(
-                  decoration : InputDecoration(
+                const TextField(
+                  decoration: InputDecoration(
                     labelText: "Name",
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 SizedBox(height: isTablet ? 30 : 20),
-
-                TextField(
+                const TextField(
                   decoration: InputDecoration(
                     labelText: "Email",
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 SizedBox(height: isTablet ? 30 : 20),
-
-                TextField(
+                const TextField(
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: "Password",
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 SizedBox(height: isTablet ? 40 : 30),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -70,9 +62,7 @@ class SignupScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                SizedBox(height: 20),
-
+               const SizedBox(height: 20),
                 Center(
                   child: TextButton(
                     onPressed: () {

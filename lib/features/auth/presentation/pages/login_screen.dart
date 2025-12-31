@@ -27,28 +27,22 @@ class LoginScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   SizedBox(height: isTablet ? 40 : 20),
-
-                  TextField(
+                  const TextField(
                     decoration: InputDecoration(
                       labelText: "Email",
                       border: OutlineInputBorder(),
                     ),
                   ),
-
                   SizedBox(height: isTablet ? 30 : 20),
-
-                  TextField(
+                  const TextField(
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: "Password",
                       border: OutlineInputBorder(),
                     ),
                   ),
-
                   SizedBox(height: isTablet ? 30 : 20),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -64,9 +58,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  SizedBox(height: 20),
-
+                const  SizedBox(height: 20),
                   TextButton(
                     onPressed: () {
                       Navigator.pushNamed(context, '/signup');
