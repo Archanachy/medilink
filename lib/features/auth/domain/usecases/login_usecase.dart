@@ -10,16 +10,16 @@ import 'package:medilink/features/auth/domain/enitities/auth_entity.dart';
 import 'package:medilink/features/auth/domain/repositories/auth_repository.dart';
 
 class LoginUsecaseParams extends Equatable {
-  final String userName;
+  final String email;
   final String password;
 
   const LoginUsecaseParams({
-    required this.userName,
+    required this.email,
     required this.password,
   });
 
   @override
-  List<Object?> get props => [userName, password];
+  List<Object?> get props => [email, password];
 }
 
 // provider for loginUsecase
@@ -37,7 +37,7 @@ class LoginUsecase  implements UsecaseWithParams<AuthEntity, LoginUsecaseParams>
   @override
   Future<Either<Failure, AuthEntity>> call(LoginUsecaseParams params) {
     
-    return _authRepository.login(params.userName, params.password);
+    return _authRepository.login(params.email, params.password);
   }
 
 }
