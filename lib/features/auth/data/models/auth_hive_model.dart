@@ -1,14 +1,14 @@
 import 'package:hive/hive.dart';
 import 'package:medilink/core/constants/hive_table_constant.dart';
-import 'package:medilink/features/auth/domain/enitities/auth_enitity.dart';
-import 'package:uuid/uuid.dart';
+import 'package:medilink/features/auth/domain/enitities/auth_entity.dart';
+// import 'package:uuid/uuid.dart';
 
 part 'auth_hive_model.g.dart';
 
 @HiveType(typeId: HiveTableConstant.authTypeId)
 class AuthHiveModel extends HiveObject {
   @HiveField(0)
-  final String authId;
+  final String? authId;
   @HiveField(1)
   final String fullName;
   @HiveField(2)
@@ -30,9 +30,9 @@ class AuthHiveModel extends HiveObject {
     required this.userName,
     this.password,
     this.profilePicture,
-  }) : authId =authId ?? Uuid().v4();
+  }) : authId =authId ?? DateTime.now().millisecondsSinceEpoch.toString();
 //From Enitity
-  factory AuthHiveModel.fromEntity( AuthEnitity entity) {
+  factory AuthHiveModel.fromEntity( AuthEntity entity) {
     return AuthHiveModel(
       authId: entity.authId,
       fullName: entity.fullName,
@@ -44,8 +44,8 @@ class AuthHiveModel extends HiveObject {
     );
   }
 //To Enitity
-  AuthEnitity toEntity() {
-    return AuthEnitity(
+  AuthEntity toEntity() {
+    return AuthEntity(
       authId: authId,
       fullName: fullName,
       email: email,
@@ -56,7 +56,7 @@ class AuthHiveModel extends HiveObject {
     );  
 }
 //To Enitity List
-  static List<AuthEnitity> toEntityList(List<AuthHiveModel> models){
+  static List<AuthEntity> toEntityList(List<AuthHiveModel> models){
     return models.map((model) => model.toEntity()).toList();    
   }
   }

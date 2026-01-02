@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medilink/core/error/failures.dart';
 import 'package:medilink/core/usecases/app_usecase.dart';
 import 'package:medilink/features/auth/data/repositories/auth_repository.dart';
-import 'package:medilink/features/auth/domain/enitities/auth_enitity.dart';
+import 'package:medilink/features/auth/domain/enitities/auth_entity.dart';
 import 'package:medilink/features/auth/domain/repositories/auth_repository.dart';
 
 class RegisterUsecaseParams extends Equatable {
@@ -42,7 +42,7 @@ class RegisterUsecase  implements UsecaseWithParams<bool, RegisterUsecaseParams>
   
   @override
   Future<Either<Failure, bool>> call(RegisterUsecaseParams params) {
-    final entity =  AuthEnitity(
+    final entity =  AuthEntity(
       fullName: params.fullName,
       email: params.email,
       phoneNumber: params.phoneNumber,

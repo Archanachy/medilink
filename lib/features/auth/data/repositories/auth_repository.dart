@@ -4,12 +4,12 @@ import 'package:medilink/core/error/failures.dart';
 import 'package:medilink/features/auth/data/datasources/auth_datasource.dart';
 import 'package:medilink/features/auth/data/datasources/local/auth_local_datasource.dart';
 import 'package:medilink/features/auth/data/models/auth_hive_model.dart';
-import 'package:medilink/features/auth/domain/enitities/auth_enitity.dart';
+import 'package:medilink/features/auth/domain/enitities/auth_entity.dart';
 import 'package:medilink/features/auth/domain/repositories/auth_repository.dart';
 
 //provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(authDatasource: ref.read(authLocalDatasourceProvider));
+  return AuthRepository(authDatasource: ref.watch(authLocalDatasourceProvider));
 });
 
 class AuthRepository  implements IAuthRepository{
@@ -19,22 +19,22 @@ class AuthRepository  implements IAuthRepository{
   : _authDatasource = authDatasource;
 
   @override
-  Future<Either<Failure, bool>> register(entity) async {
+  Future<Either<Failure, bool>> register(AuthEntity entity) async {
     try{
       // convert to model
       final model = AuthHiveModel.fromEntity(entity);
       final result = await _authDatasource.register(model);
       if(result){
-        return Right(true);
+        return const Right(true);
       }
-      return Left(LocalDatabaseFailure(message: 'Failed to register user'));
+      return const Left(LocalDatabaseFailure(message: 'Failed to register user'));
     }catch(e){
       return Left(LocalDatabaseFailure(message: e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, AuthEnitity>> login(String email, String password) async {
+  Future<Either<Failure, AuthEntity>> login(String email, String password) async {
     try{
       final user = await _authDatasource.login(email, password);
       if(user != null){
@@ -49,7 +49,7 @@ class AuthRepository  implements IAuthRepository{
   }
 
   @override
-  Future<Either<Failure, AuthEnitity>> getCurrentUser() async {
+  Future<Either<Failure, AuthEntity>> getCurrentUser() async {
     try{
       final user = await _authDatasource.getCurrentUser();
       if(user != null){

@@ -14,8 +14,8 @@ class AuthLocalDatasource implements IAuthDatasource {
 
   @override
   Future<AuthHiveModel?> getCurrentUser() {
-    // TODO: implement getCurrentUser
-    throw UnimplementedError();
+    // safe fallback — return null if no current user tracking implemented yet
+    return Future.value(null);
   }
 
   @override
@@ -52,12 +52,10 @@ class AuthLocalDatasource implements IAuthDatasource {
   @override
   Future<bool> register(AuthHiveModel model) async{
     try{
-     await _hiveService.resgisterUser(model);
+      await _hiveService.registerUser(model);
       return Future.value(true);
     }catch(e){
       return Future.value(false); 
     }
   }
-  
-  
 }

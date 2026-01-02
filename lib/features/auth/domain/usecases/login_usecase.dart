@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medilink/core/error/failures.dart';
 import 'package:medilink/core/usecases/app_usecase.dart';
 import 'package:medilink/features/auth/data/repositories/auth_repository.dart';
-import 'package:medilink/features/auth/domain/enitities/auth_enitity.dart';
+import 'package:medilink/features/auth/domain/enitities/auth_entity.dart';
 import 'package:medilink/features/auth/domain/repositories/auth_repository.dart';
 
 class LoginUsecaseParams extends Equatable {
@@ -28,14 +28,14 @@ final loginUsecaseProvider = Provider<LoginUsecase>((ref) {
   return LoginUsecase(authRepository: authRepository);
 });
 
-class LoginUsecase  implements UsecaseWithParams<AuthEnitity, LoginUsecaseParams>{
+class LoginUsecase  implements UsecaseWithParams<AuthEntity, LoginUsecaseParams>{
   final IAuthRepository _authRepository;
   LoginUsecase({required IAuthRepository authRepository})
   : _authRepository = authRepository;
   
   
   @override
-  Future<Either<Failure, AuthEnitity>> call(LoginUsecaseParams params) {
+  Future<Either<Failure, AuthEntity>> call(LoginUsecaseParams params) {
     
     return _authRepository.login(params.userName, params.password);
   }

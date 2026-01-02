@@ -18,7 +18,7 @@ class HiveService {
 
   //Register all type adapters
   void _registerAdapters() {
-    if(!Hive.isAdapterRegistered(HiveTableConstant.authTypeId) == false){
+    if(!Hive.isAdapterRegistered(HiveTableConstant.authTypeId)){
       Hive.registerAdapter(AuthHiveModelAdapter());
     }
 
@@ -44,7 +44,7 @@ class HiveService {
  Box<AuthHiveModel> get _authBox =>
    Hive.box<AuthHiveModel>(HiveTableConstant.authTable);
 
-  Future<AuthHiveModel> resgisterUser(AuthHiveModel model) async {
+  Future<AuthHiveModel> registerUser(AuthHiveModel model) async {
     await _authBox.put(model.authId, model);
     return model;
 
