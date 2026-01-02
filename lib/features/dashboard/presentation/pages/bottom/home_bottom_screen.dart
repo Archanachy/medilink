@@ -105,28 +105,28 @@ class HomeBottomScreen extends StatelessWidget {
 }
 
 // Navigation Item Widget
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
+// class _NavItem extends StatelessWidget {
+//   final IconData icon;
+//   final String label;
 
-  const _NavItem({
-    Key? key,
-    required this.icon,
-    required this.label,
-  }) : super(key: key);
+//   const _NavItem({
+//     Key? key,
+//     required this.icon,
+//     required this.label,
+//   }) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 26),
-        const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       mainAxisSize: MainAxisSize.min,
+//       children: [
+//         Icon(icon, size: 26),
+//         const SizedBox(height: 4),
+//         Text(label, style: const TextStyle(fontSize: 12)),
+//       ],
+//     );
+//   }
+// }
 
 // Appointment Card
 class _AppointmentCard extends StatelessWidget {

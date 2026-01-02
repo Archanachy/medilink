@@ -1,10 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medilink/features/auth/presentation/view_model/auth_view_model.dart';
+import 'package:medilink/features/auth/presentation/states/auth_state.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final TextEditingController _userController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _userController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authViewModelProvider);
+    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
+      if (next.status == AuthStatus.authenticated) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login Successful')),
+        );
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else if (next.status == AuthStatus.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.errorMessage ?? 'Login Error')),
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: LayoutBuilder(
@@ -27,33 +59,32 @@ class LoginScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   SizedBox(height: isTablet ? 40 : 20),
-
                   TextField(
-                    decoration: InputDecoration(
-                      labelText: "Email",
+                    controller: _userController,
+                    decoration: const InputDecoration(
+                      labelText: "Email or Username",
                       border: OutlineInputBorder(),
                     ),
                   ),
-
                   SizedBox(height: isTablet ? 30 : 20),
-
                   TextField(
+                    controller: _passwordController,
                     obscureText: true,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: "Password",
                       border: OutlineInputBorder(),
                     ),
                   ),
-
                   SizedBox(height: isTablet ? 30 : 20),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/dashboard');
+                        ref.read(authViewModelProvider.notifier).login(
+                              email: _userController.text,
+                              password: _passwordController.text,
+                            );
                       },
                       child: Padding(
                         padding: EdgeInsets.all(isTablet ? 20 : 14),
@@ -64,9 +95,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  SizedBox(height: 20),
-
+                  const SizedBox(height: 20),
                   TextButton(
                     onPressed: () {
                       Navigator.pushNamed(context, '/signup');

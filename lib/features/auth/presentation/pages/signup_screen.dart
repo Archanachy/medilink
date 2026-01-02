@@ -1,10 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medilink/features/auth/presentation/states/auth_state.dart';
+import 'package:medilink/features/auth/presentation/view_model/auth_view_model.dart';
 
-class SignupScreen extends StatelessWidget {
-   const SignupScreen({super.key});
+class SignupScreen extends ConsumerStatefulWidget {
+  const SignupScreen({super.key});
+
+  @override
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
+}
+
+class _SignupScreenState extends ConsumerState<SignupScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authViewModelProvider);
+    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
+      if (next.status == AuthStatus.registered) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration Successful')),
+        );
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else if (next.status == AuthStatus.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.errorMessage ?? 'Registration Error')),
+        );
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(title: const Text("Sign Up")),
       body: LayoutBuilder(
@@ -24,42 +60,43 @@ class SignupScreen extends StatelessWidget {
                       fontSize: isTablet ? 30 : 24,
                       fontWeight: FontWeight.bold,
                     )),
-
                 SizedBox(height: isTablet ? 30 : 20),
-
                 TextField(
-                  decoration : InputDecoration(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
                     labelText: "Name",
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 SizedBox(height: isTablet ? 30 : 20),
-
                 TextField(
-                  decoration: InputDecoration(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
                     labelText: "Email",
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 SizedBox(height: isTablet ? 30 : 20),
-
                 TextField(
+                  controller: _passwordController,
                   obscureText: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: "Password",
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 SizedBox(height: isTablet ? 40 : 30),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/dashboard');
+                      // DO NOT navigate here — wait for state listener to navigate on success
+                      ref.read(authViewModelProvider.notifier).register(
+                            fullName: _nameController.text.trim(),
+                            email: _emailController.text.trim(),
+                            userName: _usernameController.text.trim(),
+                            password: _passwordController.text,
+                          );
                     },
                     child: Padding(
                       padding: EdgeInsets.all(isTablet ? 20 : 14),
@@ -70,9 +107,7 @@ class SignupScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                SizedBox(height: 20),
-
+                const SizedBox(height: 20),
                 Center(
                   child: TextButton(
                     onPressed: () {
