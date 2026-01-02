@@ -41,7 +41,7 @@ class AuthRepository  implements IAuthRepository{
         final entity = user.toEntity();
         return Right(entity);
       }
-      return Left(LocalDatabaseFailure(message: "Invalid credentials"));
+      return const Left(LocalDatabaseFailure(message: "Invalid credentials"));
       
     }catch(e){
       return Left(LocalDatabaseFailure(message: e.toString()));
