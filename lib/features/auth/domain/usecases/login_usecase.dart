@@ -21,6 +21,7 @@ class LoginUsecaseParams extends Equatable {
   @override
   List<Object?> get props => [email, password];
 }
+//Handle login failure and surface errors to UI"
 
 // provider for loginUsecase
 final loginUsecaseProvider = Provider<LoginUsecase>((ref) {
