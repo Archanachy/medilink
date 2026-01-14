@@ -13,64 +13,79 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 class AuthRepository  implements IAuthRepository{
-  final IAuthDatasource _authDatasource;
+  final IAuthLocalDatasource _authDatasource;
 
-  AuthRepository({required IAuthDatasource authDatasource})
+  AuthRepository({required IAuthLocalDatasource authDatasource})
   : _authDatasource = authDatasource;
 
   @override
-  Future<Either<Failure, bool>> register(AuthEntity entity) async {
-    try{
-      // convert to model
-      final model = AuthHiveModel.fromEntity(entity);
-      final result = await _authDatasource.register(model);
-      if(result){
-        return const Right(true);
+  Future<Either<Failure, bool>> register(AuthEntity user) async {
+    try {
+      // Check if email already exists
+      final existingUser = await _authDatasource.isEmailExists(user.email);
+      if (existingUser) {
+        return const Left(
+          LocalDatabaseFailure(message: "Email already registered"),
+        );
       }
-      return const Left(LocalDatabaseFailure(message: 'Failed to register user'));
-    }catch(e){
+
+      final authModel = AuthHiveModel(
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        userName: user.userName,
+        password: user.password,
+        profilePicture: user.profilePicture,
+      );
+      await _authDatasource.register(authModel);
+      return const Right(true);
+    } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, AuthEntity>> login(String email, String password) async {
-    try{
-      final user = await _authDatasource.login(email, password);
-      if(user != null){
-        final entity = user.toEntity();
+  Future<Either<Failure, AuthEntity>> login(
+    String email,
+    String password,
+  ) async {
+    try {
+      final model = await _authDatasource.login(email, password);
+      if (model != null) {
+        final entity = model.toEntity();
         return Right(entity);
       }
-      return const Left(LocalDatabaseFailure(message: "Invalid credentials"));
-      
-    }catch(e){
+      return const Left(
+        LocalDatabaseFailure(message: "Invalid email or password"),
+      );
+    } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, AuthEntity>> getCurrentUser() async {
-    try{
-      final user = await _authDatasource.getCurrentUser();
-      if(user != null){
-        final entity = user.toEntity();
+    try {
+      final model = await _authDatasource.getCurrentUser();
+      if (model != null) {
+        final entity = model.toEntity();
         return Right(entity);
       }
-      return Left(LocalDatabaseFailure(message: "No user found"));
-    }catch(e){
+      return const Left(LocalDatabaseFailure(message: "No user logged in"));
+    } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, bool>> logout() async {
-    try{
+    try {
       final result = await _authDatasource.logout();
-      if(result){
-        return Right(true);
+      if (result) {
+        return const Right(true);
       }
-      return Left(LocalDatabaseFailure(message: "Failed to logout user"));
-    }catch(e){
+      return const Left(LocalDatabaseFailure(message: "Failed to logout"));
+    } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));
     }
   }
