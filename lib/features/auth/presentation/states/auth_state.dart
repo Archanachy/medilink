@@ -6,26 +6,26 @@ enum AuthStatus { initial, authenticated, unauthenticated,registered, loading, e
 class AuthState extends Equatable{
   final AuthStatus status;
   final String? errorMessage;
-  final AuthEntity? authEnitity;
+  final AuthEntity? user;
 
   const AuthState({
     this.status = AuthStatus.initial,
     this.errorMessage,
-    this.authEnitity,
+    this.user,
   });
 
   // copywith 
   AuthState copyWith({
     AuthStatus? status,
     String? errorMessage,
-    AuthEntity? authEnitity,
+    AuthEntity? user,
   }) {
     return AuthState(
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
-      authEnitity: authEnitity ?? this.authEnitity,
+      user: user ?? this.user,
     );
   }
   @override
-  List<Object?> get props => [status, errorMessage, authEnitity];
+  List<Object?> get props => [status, errorMessage, user];
 }
