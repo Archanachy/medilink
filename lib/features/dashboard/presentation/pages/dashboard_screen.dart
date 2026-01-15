@@ -37,7 +37,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // 📱 MOBILE UI (Bottom Navigation)
+  //  MOBILE UI (Bottom Navigation)
   Widget _buildMobileLayout() {
     return Scaffold(
       body: _screens[_currentIndex],
@@ -45,7 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: const Color.fromARGB(255, 59, 56, 56),
         onTap: (index) {
           setState(() {
             _currentIndex = index;
@@ -73,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // 📱 TABLET UI (Navigation Rail)
+  // TABLET UI (Navigation Rail)
   Widget _buildTabletLayout() {
     return Scaffold(
       body: Row(

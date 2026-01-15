@@ -1,5 +1,3 @@
-
-
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +19,7 @@ class LoginUsecaseParams extends Equatable {
   @override
   List<Object?> get props => [email, password];
 }
-//Handle login failure and surface errors to UI"
+
 
 // provider for loginUsecase
 final loginUsecaseProvider = Provider<LoginUsecase>((ref) {
@@ -33,12 +31,11 @@ class LoginUsecase  implements UsecaseWithParams<AuthEntity, LoginUsecaseParams>
   final IAuthRepository _authRepository;
   LoginUsecase({required IAuthRepository authRepository})
   : _authRepository = authRepository;
-  
-  
+
+
   @override
   Future<Either<Failure, AuthEntity>> call(LoginUsecaseParams params) {
-    
+
     return _authRepository.login(params.email, params.password);
   }
-
 }

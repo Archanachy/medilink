@@ -149,14 +149,14 @@ class _AppointmentCard extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           const Text('With Dr. Evelyn Reed',
-              style: TextStyle(fontSize: 14, color: Colors.grey)),
+              style: TextStyle(fontSize: 14, color: Color.fromARGB(255, 46, 41, 41))),
           const SizedBox(height: 6),
           const Row(
             children: [
-              Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+              Icon(Icons.calendar_today, size: 16, color: Color.fromARGB(255, 34, 29, 29)),
               SizedBox(width: 6),
               Text('Tomorrow, 3:00 PM',
-                  style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  style: TextStyle(fontSize: 14, color: Color.fromARGB(255, 52, 47, 47))),
             ],
           )
         ],

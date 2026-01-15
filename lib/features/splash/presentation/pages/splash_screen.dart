@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medilink/core/services/storage/user_session_service.dart';
+import 'package:medilink/features/dashboard/presentation/pages/dashboard_screen.dart';
+import 'package:medilink/features/onboarding/presentation/pages/onboarding_screen.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
 
   double batteryLevel = 0.0;
@@ -30,7 +34,31 @@ class _SplashScreenState extends State<SplashScreen>
       //delay for 2 seconds
       await Future.delayed(const Duration(milliseconds: 100));
 
-      Navigator.pushReplacementNamed(context,"/onboarding");
+      // check if user os already logged in
+      final UserSessionService = ref.read(userSessionServiceProvider);
+      final isLoggedIn = UserSessionService.isLoggedIn();
+      if (!mounted) return;
+
+      if(isLoggedIn){
+
+      // implement this   
+      //static void pushReplacement(BuildContext context, Widget page) {
+      //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
+      // }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+      );
+
+      } else {
+        Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+      );
+
+      }
+
+
     });
   }
 
