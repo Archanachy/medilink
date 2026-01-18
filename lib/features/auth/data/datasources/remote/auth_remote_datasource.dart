@@ -5,24 +5,23 @@ import 'package:medilink/core/services/storage/user_session_service.dart';
 import 'package:medilink/features/auth/data/datasources/auth_datasource.dart';
 import 'package:medilink/features/auth/data/models/auth_api_model.dart';
 
-// create provider
-final authRemoteDataSourceProvider =
-    Provider<IAuthRemoteDatasource>((ref) {
+
+//create provider
+final authRemoteDataSourceProvider = Provider<IAuthRemoteDatasource>((ref) {
   return AuthRemoteDatasource(
     apiClient: ref.read(apiClientProvider),
     userSessionService: ref.read(userSessionServiceProvider),
   );
 });
-
-class AuthRemoteDatasource implements IAuthRemoteDatasource {
+class AuthRemoteDatasource implements IAuthRemoteDatasource{
   final ApiClient _apiClient;
   final UserSessionService _userSessionService;
 
   AuthRemoteDatasource({
     required ApiClient apiClient,
     required UserSessionService userSessionService,
-  })  : _apiClient = apiClient,
-        _userSessionService = userSessionService;
+  }) : _apiClient = apiClient,
+       _userSessionService = userSessionService;
 
   @override
   Future<AuthApiModel?> getUserById(String authId) {
@@ -31,7 +30,7 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
   }
 
   @override
-  Future<AuthApiModel?> login(String email, String password) async {
+  Future<AuthApiModel?> login(String email, String password) async{
     final response = await _apiClient.post(
       ApiEndpoints.userLogin,
       data: {
@@ -40,7 +39,7 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
       },
     );
 
-    if (response.data['success'] == true) {
+    if(response.data['success'] == true){
       final data = response.data['data'] as Map<String, dynamic>;
       final user = AuthApiModel.fromJson(data);
 
