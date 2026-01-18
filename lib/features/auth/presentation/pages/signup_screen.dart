@@ -60,6 +60,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               horizontal: isTablet ? 80 : 20,
               vertical: 30,
             ),
+            //this column contains name, email, password, confirm password, signup button, login redirect
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
