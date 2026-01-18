@@ -4,8 +4,7 @@ import 'package:medilink/core/api/api_endpoints.dart';
 import 'package:medilink/core/services/storage/user_session_service.dart';
 import 'package:medilink/features/auth/data/datasources/auth_datasource.dart';
 import 'package:medilink/features/auth/data/models/auth_api_model.dart';
-import 'package:medilink/features/auth/data/models/auth_hive_model.dart';
-import 'package:medilink/features/auth/data/repositories/auth_repository.dart';
+
 
 //create provider
 final authRemoteDataSourceProvider = Provider<IAuthRemoteDatasource>((ref) {
