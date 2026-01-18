@@ -64,6 +64,7 @@ class AuthLocalDatasource implements IAuthLocalDatasource {
   Future<bool> logout()async {
     try{
       await _hiveService.logoutUser();
+      await _userSessionService.clearSession();
       return Future.value(true);
     }catch(e){
       return Future.value(false);

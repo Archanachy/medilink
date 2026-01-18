@@ -24,10 +24,11 @@ class AuthApiModel {
     return {
       "name": fullName,
       "email": email,
-      "phoneNumber": phoneNumber,
+      "phoneNumber": phoneNumber ?? "",
       "userName": userName,
       "password": password,
-      "profilePicture": profilePicture,
+      "profilePicture": profilePicture ?? "",
+      "confirmPassword": password,
     };
   }
 

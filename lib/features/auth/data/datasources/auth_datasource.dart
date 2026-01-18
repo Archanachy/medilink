@@ -1,3 +1,4 @@
+import 'package:medilink/features/auth/data/models/auth_api_model.dart';
 import 'package:medilink/features/auth/data/models/auth_hive_model.dart';
 
 abstract interface class IAuthLocalDatasource {
@@ -9,7 +10,7 @@ abstract interface class IAuthLocalDatasource {
 }
 
 abstract interface class IAuthRemoteDatasource {
-  Future<AuthHiveModel> register(AuthHiveModel user);
-  Future<AuthHiveModel?> login(String email, String password);
-  Future<AuthHiveModel?> getUserById(String authId);
+  Future<AuthApiModel> register(AuthApiModel user);
+  Future<AuthApiModel?> login(String email, String password);
+  Future<AuthApiModel?> getUserById(String authId);
 }

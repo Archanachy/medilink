@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medilink/features/dashboard/presentation/pages/bottom/acitivity_bottom_screen.dart';
 import 'package:medilink/features/dashboard/presentation/pages/bottom/appointments_bottom_screen.dart';
 import 'package:medilink/features/dashboard/presentation/pages/bottom/home_bottom_screen.dart';
 import 'package:medilink/features/dashboard/presentation/pages/bottom/record_bottom_screen.dart';
 
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
@@ -113,4 +114,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+}
+
+// check ref functionn 
+void checkref(){
 }
