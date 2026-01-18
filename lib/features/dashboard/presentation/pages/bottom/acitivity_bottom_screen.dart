@@ -7,8 +7,7 @@ class ActivityBottomScreen extends ConsumerStatefulWidget {
   const ActivityBottomScreen({super.key});
 
   @override
-  ConsumerState<ActivityBottomScreen> createState() =>
-      _ActivityBottomScreenState();
+  ConsumerState<ActivityBottomScreen> createState() => _ActivityBottomScreenState();
 }
 
 class _ActivityBottomScreenState extends ConsumerState<ActivityBottomScreen> {
@@ -43,8 +42,16 @@ class _ActivityBottomScreenState extends ConsumerState<ActivityBottomScreen> {
             ),
           ),
           const SizedBox(height: 24),
-
-          // Logout button
+          // Container(
+          //   icon: Icons.logout_rounded,
+          //   title: 'Logout',
+          //   iconColor: AppColors.error,
+          //   titleColor: AppColors.error,
+          //   onTap: () {
+          //     _showLogoutDialog(context);
+          //   },
+          // ),
+          // logout button add 
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 40),
             width: double.infinity,
@@ -54,7 +61,7 @@ class _ActivityBottomScreenState extends ConsumerState<ActivityBottomScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               onPressed: () {
-                _showLogoutDialog(context);
+                 _showLogoutDialog(context);
               },
               child: const Text(
                 'Logout',
@@ -62,58 +69,101 @@ class _ActivityBottomScreenState extends ConsumerState<ActivityBottomScreen> {
               ),
             ),
           )
+
         ],
       ),
     );
   }
-
-  // ---------------------------
-  // Use this function inside the class
-  // ---------------------------
   void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+  showDialog(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      title: const Text(
+        'Logout',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
         ),
-        title: const Text(
-          'Logout',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
+      ),
+      content: const Text('Are you sure you want to logout?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: const Text(
+            'Cancel',
+            // style: TextStyle(color: context.textSecondary),
           ),
         ),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
+        TextButton(
+          onPressed: () async {
               Navigator.pop(dialogContext);
-
               // Clear user session
               await ref.read(authViewModelProvider.notifier).logout();
-
               if (context.mounted) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const LoginScreen()),
-                );
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen())
+              );
               }
             },
-            child: const Text(
-              'Logout',
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
+          child: const Text(
+            'Logout',
+            style: TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }
+}
+
+//   void _showLogoutDialog(BuildContext context) {
+//     showDialog(
+//       context: context,
+//       builder: (dialogContext) => AlertDialog(
+//         shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(20),
+//         ),
+//         title: Text(
+//           'Logout',
+//           style: TextStyle(
+//             fontWeight: FontWeight.bold,
+//           ),
+//         ),
+//         content: Text('Are you sure you want to logout?'),
+//         actions: [
+//           TextButton(
+//             onPressed: () => Navigator.pop(dialogContext),
+//             child: Text(
+//               'Cancel',
+//               style: TextStyle(color: context.textSecondary),
+//             ),
+//           ),
+//           TextButton(
+//             onPressed: () async {
+//               Navigator.pop(dialogContext);
+//               // Clear user session
+//               await ref.read(authViewmodelProvider.notifier).logout();
+//               if (context.mounted) {
+//                 AppRoutes.pushAndRemoveUntil(context, const LoginPage());
+//               }
+//             },
+//             child: Text(
+//               'Logout',
+//               style: TextStyle(
+//                 color: AppColors.error,
+//                 fontWeight: FontWeight.bold,
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+// to use the above function inside the class
