@@ -19,6 +19,16 @@ class PatientRemoteDatasource {
   Future<PatientApiModel> getPatientByUserId(String userId) async {
     final res = await _apiClient.get(ApiEndpoints.patientByUserId(userId));
     final data = res.data['data'] ?? res.data;
+    
+    // Backend returns array, take the first patient
+    if (data is List) {
+      if (data.isEmpty) {
+        throw Exception('No patient found for user');
+      }
+      return PatientApiModel.fromJson(data.first as Map<String, dynamic>);
+    }
+    
+    // If data is already a single object
     return PatientApiModel.fromJson(data as Map<String, dynamic>);
   }
 
@@ -45,6 +55,15 @@ class PatientRemoteDatasource {
     }
 
     final data = res.data['data'] ?? res.data;
+    
+    // Handle if backend returns array instead of single object
+    if (data is List) {
+      if (data.isEmpty) {
+        throw Exception('No patient found after update');
+      }
+      return PatientApiModel.fromJson(data.first as Map<String, dynamic>);
+    }
+    
     return PatientApiModel.fromJson(data as Map<String, dynamic>);
   }
 }

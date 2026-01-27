@@ -1,3 +1,4 @@
+import 'package:medilink/core/api/api_endpoints.dart';
 import 'package:medilink/features/edit_profile/domain/enitities/user_profile_entity.dart';
 
 class PatientApiModel {
@@ -62,6 +63,12 @@ class PatientApiModel {
   }
 
   UserProfileEntity toEntity({required String email, required String userName}) {
+    String? _resolveImageUrl(String? path) {
+      if (path == null || path.isEmpty) return null;
+      if (path.startsWith('http')) return path;
+      return '${ApiEndpoints.baseUrl}$path';
+    }
+
     return UserProfileEntity(
       userId: userId,
       patientId: id,
@@ -71,7 +78,7 @@ class PatientApiModel {
       email: email,
       userName: userName,
       phoneNumber: phone,
-      profilePicture: profileImage,
+      profilePicture: _resolveImageUrl(profileImage),
       dateOfBirth: dateOfBirth,
       bloodGroup: bloodGroup,
       gender: gender,
