@@ -35,7 +35,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authViewModelProvider);
+    // final authState = ref.watch(authViewModelProvider);
     ref.listen<AuthState>(authViewModelProvider, (previous, next) {
       if (next.status == AuthStatus.registered) {
         ScaffoldMessenger.of(context).showSnackBar(

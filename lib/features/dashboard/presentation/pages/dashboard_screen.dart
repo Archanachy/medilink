@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:medilink/features/dashboard/presentation/pages/bottom/acitivity_bottom_screen.dart';
 import 'package:medilink/features/dashboard/presentation/pages/bottom/appointments_bottom_screen.dart';
 import 'package:medilink/features/dashboard/presentation/pages/bottom/home_bottom_screen.dart';
+import 'package:medilink/features/dashboard/presentation/pages/bottom/profile_bottom_screen.dart';
 import 'package:medilink/features/dashboard/presentation/pages/bottom/record_bottom_screen.dart';
 
 
@@ -20,8 +20,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final List<Widget> _screens = const [
     HomeBottomScreen(),
     AppointmentsBottomScreen(),
-    RecordBottomScreen(),
-    ActivityBottomScreen(),
+    RecordBottomScreen(), // Chat placeholder
+    ProfileBottomScreen(),
   ];
 
   @override
@@ -44,9 +44,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: const Color.fromARGB(255, 59, 56, 56),
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
@@ -54,20 +53,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
+            icon: Icon(Icons.home),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month),
+            icon: Icon(Icons.calendar_today),
             label: 'Appointments',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.description),
-            label: 'Records',
+            icon: Icon(Icons.chat),
+            label: 'Chat',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Activity',
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),
@@ -89,20 +88,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             labelType: NavigationRailLabelType.all,
             destinations: const [
               NavigationRailDestination(
-                icon: Icon(Icons.home_outlined),
+                icon: Icon(Icons.home),
                 label: Text('Home'),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.calendar_month),
+                icon: Icon(Icons.calendar_today),
                 label: Text('Appointments'),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.description),
-                label: Text('Records'),
+                icon: Icon(Icons.chat),
+                label: Text('Chat'),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.history),
-                label: Text('Activity'),
+                icon: Icon(Icons.person),
+                label: Text('Profile'),
               ),
             ],
           ),
