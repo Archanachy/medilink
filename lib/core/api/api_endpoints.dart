@@ -2,7 +2,11 @@ class ApiEndpoints {
   ApiEndpoints._();
 
   // Base URL - change this for production
-  static const String baseUrl = 'http://10.0.2.2:5050/auth';
+  // static const String baseUrl = 'http://10.0.2.2:5050/auth';
+
+  // for physical device. 
+  static const String baseUrl = 'http://172.25.10.119:5050/auth';
+
   // static const String baseUrl = 'http://localhost:3000/api/v1';
   // For Android Emulator use: 'http://10.0.2.2:3000/api/v1'
   // For iOS Simulator use: 'http://localhost:5000/api/v1'
@@ -21,6 +25,10 @@ class ApiEndpoints {
   static const String userRegister = '/register';
   static String userById(String id) => '/users/$id';
   static String userPhoto(String id) => '/users/$id/photo';
+
+  // ============ Patient Endpoints ============
+  static String patientById(String id) => '/patients/$id';
+  static String patientByUserId(String userId) => '/patients/user/$userId';
 
   // ============ Item Endpoints ============
   static const String items = '/items';

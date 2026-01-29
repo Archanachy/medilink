@@ -5,7 +5,6 @@ class AuthApiModel {
   final String fullName;
   final String email;
   final String? phoneNumber;
-  final String userName;
   final String? password;
   final String? profilePicture;
 
@@ -14,18 +13,22 @@ class AuthApiModel {
     required this.fullName,
     required this.email,
     this.phoneNumber,
-    required this.userName,
     this.password,
     this.profilePicture,
   });
 
+  // Getter to derive userName from email
+  String get userName => email.split('@')[0];
+
   // toJSON
   Map<String, dynamic> toJson() {
+    final names = fullName.split(' ');
     return {
-      "name": fullName,
+      "firstName": names.isNotEmpty ? names[0] : "",
+      "lastName": names.length > 1 ? names.sublist(1).join(' ') : "",
       "email": email,
       "phoneNumber": phoneNumber ?? "",
-      "userName": userName,
+      "username": userName,
       "password": password,
       "profilePicture": profilePicture ?? "",
       "confirmPassword": password,
@@ -34,12 +37,15 @@ class AuthApiModel {
 
   // fromJson
   factory AuthApiModel.fromJson(Map<String, dynamic> json) {
+    final firstName = json['firstName'] as String? ?? '';
+    final lastName = json['lastName'] as String? ?? '';
+    final fullName = '$firstName $lastName'.trim();
+
     return AuthApiModel(
-      id: json['_id'] as String,
-      fullName: json['name'] as String,
+      id: json['_id'] as String?,
+      fullName: fullName.isEmpty ? json['username'] as String : fullName,
       email: json['email'] as String,
       phoneNumber: json['phoneNumber'] as String?,
-      userName: json['username'] as String,
       profilePicture: json['profilePicture'] as String?,
     );
   }
@@ -62,7 +68,6 @@ class AuthApiModel {
       fullName: entity.fullName,
       email: entity.email,
       phoneNumber: entity.phoneNumber,
-      userName: entity.userName,
       password: entity.password,
       profilePicture: entity.profilePicture,
     );

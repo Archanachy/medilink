@@ -130,7 +130,7 @@ class HomeBottomScreen extends StatelessWidget {
 
 // Appointment Card
 class _AppointmentCard extends StatelessWidget {
-  const _AppointmentCard({Key? key}) : super(key: key);
+  const _AppointmentCard();
 
   @override
   Widget build(BuildContext context) {
@@ -172,11 +172,10 @@ class _ActionButton extends StatelessWidget {
   final int? badgeCount;
 
   const _ActionButton({
-    Key? key,
     required this.icon,
     required this.label,
     this.badgeCount,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

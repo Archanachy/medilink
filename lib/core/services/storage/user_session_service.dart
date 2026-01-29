@@ -18,6 +18,7 @@ class UserSessionService {
   // Keys for storing user data
   static const String _keyIsLoggedIn = 'is_logged_in';
   static const String _keyUserId = 'user_id';
+  static const String _keyPatientId = 'patient_id';
   static const String _keyUserEmail = 'user_email';
   static const String _keyUserFullName = 'user_full_name';
   static const String _keyUserUsername = 'user_username';
@@ -84,10 +85,21 @@ class UserSessionService {
     return _prefs.getString(_keyUserProfilePicture);
   }
 
+  // Save patient ID
+  Future<void> savePatientId(String patientId) async {
+    await _prefs.setString(_keyPatientId, patientId);
+  }
+
+  // Get current patient ID
+  String? getCurrentPatientId() {
+    return _prefs.getString(_keyPatientId);
+  }
+
   // Clear user session (logout)
   Future<void> clearSession() async {
     await _prefs.remove(_keyIsLoggedIn);
     await _prefs.remove(_keyUserId);
+    await _prefs.remove(_keyPatientId);
     await _prefs.remove(_keyUserEmail);
     await _prefs.remove(_keyUserFullName);
     await _prefs.remove(_keyUserUsername);
