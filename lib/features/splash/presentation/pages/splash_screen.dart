@@ -35,8 +35,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       await Future.delayed(const Duration(milliseconds: 100));
 
       // check if user os already logged in
-      final UserSessionService = ref.read(userSessionServiceProvider);
-      final isLoggedIn = UserSessionService.isLoggedIn();
+      final userSessionService = ref.read(userSessionServiceProvider);
+      final isLoggedIn = userSessionService.isLoggedIn();
       if (!mounted) return;
 
       if(isLoggedIn){
