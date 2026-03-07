@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:medilink/core/services/storage/user_session_service.dart';
 import 'package:medilink/features/dashboard/presentation/pages/dashboard_screen.dart';
 import 'package:medilink/features/onboarding/presentation/pages/onboarding_screen.dart';
@@ -13,6 +14,7 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
+  static const _secureStorage = FlutterSecureStorage();
 
   double batteryLevel = 0.0;
 
@@ -26,6 +28,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     Future.delayed(const Duration(milliseconds: 500), () async {
       for (double i = 0; i <= 1.02; i += 0.02) {
         await Future.delayed(const Duration(milliseconds: 50));
+        if (!mounted) return;
         setState(() {
           batteryLevel = i;
         });
@@ -34,12 +37,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       //delay for 2 seconds
       await Future.delayed(const Duration(milliseconds: 100));
 
+      if (!mounted) return;
+
       // check if user os already logged in
       final userSessionService = ref.read(userSessionServiceProvider);
       final isLoggedIn = userSessionService.isLoggedIn();
+      final token = await _secureStorage.read(key: 'auth_token');
+      final hasToken = token != null && token.isNotEmpty;
+
       if (!mounted) return;
 
-      if(isLoggedIn){
+      if (isLoggedIn && hasToken) {
 
       // implement this   
       //static void pushReplacement(BuildContext context, Widget page) {
@@ -51,6 +59,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       );
 
       } else {
+        if (isLoggedIn && !hasToken) {
+          await userSessionService.clearSession();
+        }
+        if (!mounted) return;
         Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const OnboardingScreen()),
