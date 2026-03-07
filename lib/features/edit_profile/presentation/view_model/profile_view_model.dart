@@ -23,56 +23,92 @@ class ProfileViewModel extends Notifier<ProfileState> {
     return const ProfileState();
   }
 
+  UserProfileEntity _buildDoctorProfileFromSession() {
+    final userId = _userSessionService.getCurrentUserId();
+    final fullName =
+        (_userSessionService.getCurrentUserFullName() ?? '').trim();
+    final userName =
+        (_userSessionService.getCurrentUserUsername() ?? '').trim();
+    final email = (_userSessionService.getCurrentUserEmail() ?? '').trim();
+    final phoneNumber = _userSessionService.getCurrentUserPhoneNumber();
+    final profilePicture = _userSessionService.getCurrentUserProfilePicture();
+    final role = _userSessionService.getCurrentUserRole();
+
+    final parts =
+        fullName.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
+    final firstName = parts.isNotEmpty ? parts.first : 'Doctor';
+    final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+    final safeFullName = fullName.isNotEmpty ? fullName : firstName;
+
+    return UserProfileEntity(
+      userId: userId,
+      patientId: null,
+      firstName: firstName,
+      lastName: lastName,
+      fullName: safeFullName,
+      email: email,
+      userName: userName,
+      role: role,
+      phoneNumber: phoneNumber,
+      profilePicture: profilePicture,
+      specialization: null,
+      qualifications: null,
+      experience: null,
+      consultationFee: null,
+      bio: null,
+    );
+  }
+
   /// Load user profile
   Future<void> loadProfile() async {
     state = state.copyWith(status: ProfileStatus.loading);
+    _patientId = null;
 
-    // Try to use stored patient ID first
-    var patientId = _userSessionService.getCurrentPatientId();
-
-    // If no patient ID in session, fetch using user ID
-    if (patientId == null) {
-      final userId = _userSessionService.getCurrentUserId();
-      if (userId == null) {
-        state = state.copyWith(
-          status: ProfileStatus.error,
-          errorMessage: () => 'User not found in session',
-        );
-        return;
-      }
-
-      final result = await _getPatientByUserIdUsecase(userId);
-      result.fold(
-        (failure) {
-          state = state.copyWith(
-            status: ProfileStatus.error,
-            errorMessage: () => failure.message,
-          );
-        },
-        (profile) {
-          _patientId = profile.patientId;
-          // Save patient ID for future use
-          _userSessionService.savePatientId(profile.patientId ?? '');
-          final email = _userSessionService.getCurrentUserEmail() ?? '';
-          final userName = _userSessionService.getCurrentUserUsername() ?? '';
-          final merged = profile.copyWith(email: email, userName: userName);
-          state = state.copyWith(
-            status: ProfileStatus.loaded,
-            profile: () => merged,
-          );
-        },
-      );
-    } else {
-      // Use stored patient ID for faster loading on subsequent calls
-      _patientId = patientId;
-      final email = _userSessionService.getCurrentUserEmail() ?? '';
-      final userName = _userSessionService.getCurrentUserUsername() ?? '';
-      // Optionally: refresh from backend using patient ID
-      // For now, just mark as loaded and let user refresh if needed
+    // Check user role - skip loading for doctors as they don't have patient profiles
+    final userRole = _userSessionService.getCurrentUserRole();
+    if (userRole?.toLowerCase() == 'doctor') {
+      final doctorProfile = _buildDoctorProfileFromSession();
       state = state.copyWith(
         status: ProfileStatus.loaded,
+        profile: () => doctorProfile,
+        selectedImage: () => null,
+        errorMessage: () => null,
+        successMessage: () => null,
       );
+      return;
     }
+
+    final userId = _userSessionService.getCurrentUserId();
+    if (userId == null || userId.isEmpty) {
+      state = state.copyWith(
+        status: ProfileStatus.error,
+        errorMessage: () => 'User not found in session',
+      );
+      return;
+    }
+
+    final result = await _getPatientByUserIdUsecase(userId);
+    result.fold(
+      (failure) {
+        state = state.copyWith(
+          status: ProfileStatus.error,
+          errorMessage: () => failure.message,
+        );
+      },
+      (profile) {
+        _patientId = profile.patientId;
+        if (profile.patientId != null && profile.patientId!.isNotEmpty) {
+          _userSessionService.savePatientId(profile.patientId!);
+        }
+        final email = _userSessionService.getCurrentUserEmail() ?? '';
+        final userName = _userSessionService.getCurrentUserUsername() ?? '';
+        final merged = profile.copyWith(email: email, userName: userName);
+        state = state.copyWith(
+          status: ProfileStatus.loaded,
+          profile: () => merged,
+        );
+      },
+    );
   }
 
   /// Update profile
@@ -84,6 +120,13 @@ class ProfileViewModel extends Notifier<ProfileState> {
     String? bloodGroup,
     String? gender,
     String? address,
+    String? emergencyContact,
+    // Doctor-specific fields
+    String? specialization,
+    String? qualifications,
+    int? experience,
+    double? consultationFee,
+    String? bio,
   }) async {
     state = state.copyWith(status: ProfileStatus.updating);
 
@@ -97,6 +140,7 @@ class ProfileViewModel extends Notifier<ProfileState> {
 
     final email = _userSessionService.getCurrentUserEmail() ?? '';
     final userName = _userSessionService.getCurrentUserUsername() ?? '';
+    final role = _userSessionService.getCurrentUserRole();
 
     final entity = UserProfileEntity(
       userId: _userSessionService.getCurrentUserId(),
@@ -112,7 +156,23 @@ class ProfileViewModel extends Notifier<ProfileState> {
       gender: gender,
       address: address,
       profilePicture: state.profile?.profilePicture,
+      role: role,
+      emergencyContact: emergencyContact,
+      specialization: specialization,
+      qualifications: qualifications,
+      experience: experience,
+      consultationFee: consultationFee,
+      bio: bio,
     );
+
+    // Ensure we have a valid patient ID before updating
+    if (_patientId == null || _patientId!.isEmpty) {
+      state = state.copyWith(
+        status: ProfileStatus.error,
+        errorMessage: () => 'Patient ID not found. Please reload your profile.',
+      );
+      return;
+    }
 
     final params = UpdatePatientParams(
       patientId: _patientId!,
