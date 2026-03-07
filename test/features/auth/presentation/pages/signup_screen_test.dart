@@ -6,7 +6,7 @@ import 'package:medilink/features/auth/presentation/states/auth_state.dart';
 import 'package:medilink/features/auth/presentation/view_model/auth_view_model.dart';
 
 class FakeAuthViewModel extends AuthViewModel {
-  AuthState _state;
+  final AuthState _state;
   bool registerCalled = false;
   String? lastFullName;
   String? lastEmail;
