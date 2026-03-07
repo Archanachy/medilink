@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:medilink/core/services/hive/hive_service.dart';
 import 'package:medilink/core/services/storage/user_session_service.dart';
 import 'package:medilink/features/auth/data/datasources/auth_datasource.dart';
 import 'package:medilink/features/auth/data/models/auth_hive_model.dart';
+
 //provider
 final authLocalDatasourceProvider = Provider<AuthLocalDatasource>((ref) {
   final hiveService = ref.read(hiveServiceProvider);
@@ -16,12 +18,13 @@ final authLocalDatasourceProvider = Provider<AuthLocalDatasource>((ref) {
 class AuthLocalDatasource implements IAuthLocalDatasource {
   final HiveService _hiveService;
   final UserSessionService _userSessionService;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   AuthLocalDatasource({
     required HiveService hiveService,
     required UserSessionService userSessionService,
-  }) : _hiveService = hiveService,
-       _userSessionService = userSessionService;
+  })  : _hiveService = hiveService,
+        _userSessionService = userSessionService;
 
   @override
   Future<AuthHiveModel?> getCurrentUser() {
@@ -31,19 +34,19 @@ class AuthLocalDatasource implements IAuthLocalDatasource {
 
   @override
   Future<bool> isEmailExists(String email) {
-    try{
+    try {
       final users = _hiveService.isEmailExists(email);
       return Future.value(users);
-    }catch(e){
-      return Future.value(false); 
+    } catch (e) {
+      return Future.value(false);
     }
   }
 
   @override
   Future<AuthHiveModel?> login(String email, String password) async {
-    try{
+    try {
       final user = await _hiveService.login(email, password);
-      if(user != null){
+      if (user != null) {
         //save to session
         await _userSessionService.saveUserSession(
           userId: user.authId!,
@@ -55,29 +58,30 @@ class AuthLocalDatasource implements IAuthLocalDatasource {
         );
       }
       return user;
-    }catch(e){
+    } catch (e) {
       return Future.value(null);
     }
   }
 
   @override
-  Future<bool> logout()async {
-    try{
+  Future<bool> logout() async {
+    try {
       await _hiveService.logoutUser();
       await _userSessionService.clearSession();
+      await _secureStorage.delete(key: 'auth_token');
+      await _secureStorage.delete(key: 'refresh_token');
+      await _secureStorage.delete(key: 'access_token');
+      await _secureStorage.delete(key: 'refreshToken');
       return Future.value(true);
-    }catch(e){
+    } catch (e) {
       return Future.value(false);
     }
-
   }
-  
+
   @override
-  Future<AuthHiveModel> register(AuthHiveModel user) async{
+  Future<AuthHiveModel> register(AuthHiveModel user) async {
     return await _hiveService.register(user);
   }
-  
-
 
   // @override
   // Future<AuthHiveModel> register(AuthHiveModel user) async {
