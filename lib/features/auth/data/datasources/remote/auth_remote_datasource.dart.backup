@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:medilink/core/api/api_client.dart';
@@ -125,29 +124,33 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
 
     if (response.data['success'] == true) {
       final data = response.data['data'] as Map<String, dynamic>;
-      final topLevelToken = response.data['token'] as String?;
-      final nestedToken = _extractAccessToken(data);
-      final effectiveToken = topLevelToken ?? nestedToken;
+      
+      // Debug: Log the entire response structure
+      print('[AUTH_LOGIN_DEBUG] Full response data keys: ${response.data.keys.toList()}');
+      print('[AUTH_LOGIN_DEBUG] data keys: ${data.keys.toList()}');
+      print('[AUTH_LOGIN_DEBUG] Full data: $data');
       
       final userData = _extractUserData(data);
+      final extractedToken = _extractAccessToken(data);
       final extractedRefreshToken = _extractRefreshToken(data);
+      
+      print('[AUTH_LOGIN_DEBUG] Extracted token: ${extractedToken != null ? 'YES (${extractedToken.substring(0, 20)}...)' : 'NO'}');
+      print('[AUTH_LOGIN_DEBUG] Extracted refresh token: ${extractedRefreshToken != null ? 'YES' : 'NO'}');
       
       final user = AuthApiModel.fromJson({
         ...userData,
-        'token': effectiveToken,
+        'token': extractedToken,
         'refreshToken': extractedRefreshToken,
       });
-
-      if (kDebugMode) {
-        print('[LOGIN] User role from API response: "${user.role}"');
-      }
 
       // Persist tokens
-      await _persistTokens({
-        ...data,
-        'token': effectiveToken,
-        'refreshToken': extractedRefreshToken,
-      });
+      print('[AUTH_LOGIN_DEBUG] Persisting tokens...');
+      await _persistTokens(data);
+      print('[AUTH_LOGIN_DEBUG] Tokens persisted');
+      
+      // Verify tokens were saved
+      final savedToken = await _secureStorage.read(key: 'auth_token');
+      print('[AUTH_LOGIN_DEBUG] Verified saved token: ${savedToken != null ? 'YES' : 'NO'}');
 
       // Save to session
       await _userSessionService.saveUserSession(
@@ -155,7 +158,6 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
         email: user.email,
         fullName: user.fullName,
         userName: user.userName,
-        role: user.role,
         phoneNumber: user.phoneNumber,
         profilePicture: user.profilePicture ?? '',
       );
@@ -219,14 +221,11 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
 
     if (response.data['success'] == true) {
       final data = response.data['data'] as Map<String, dynamic>;
-      final newToken = (response.data['token'] as String?) ?? _extractAccessToken(data);
+      final newToken = _extractAccessToken(data);
       if (newToken == null || newToken.isEmpty) {
         throw Exception('Token refresh failed');
       }
-      await _persistTokens({
-        ...data,
-        'token': newToken,
-      });
+      await _persistTokens(data);
       return newToken;
     }
     throw Exception('Token refresh failed');
@@ -241,18 +240,14 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
 
     if (response.data['success'] == true) {
       final data = response.data['data'] as Map<String, dynamic>;
-      final token = (response.data['token'] as String?) ?? _extractAccessToken(data);
       final userData = _extractUserData(data);
       final user = AuthApiModel.fromJson({
         ...userData,
-        'token': token,
+        'token': _extractAccessToken(data),
         'refreshToken': _extractRefreshToken(data),
       });
 
-      await _persistTokens({
-        ...data,
-        'token': token,
-      });
+      await _persistTokens(data);
 
       // Save session
       await _userSessionService.saveUserSession(
@@ -260,7 +255,6 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
         email: user.email,
         fullName: user.fullName,
         userName: user.userName,
-        role: user.role,
         phoneNumber: user.phoneNumber,
         profilePicture: user.profilePicture ?? '',
       );
@@ -279,18 +273,14 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
 
     if (response.data['success'] == true) {
       final data = response.data['data'] as Map<String, dynamic>;
-      final token = (response.data['token'] as String?) ?? _extractAccessToken(data);
       final userData = _extractUserData(data);
       final user = AuthApiModel.fromJson({
         ...userData,
-        'token': token,
+        'token': _extractAccessToken(data),
         'refreshToken': _extractRefreshToken(data),
       });
 
-      await _persistTokens({
-        ...data,
-        'token': token,
-      });
+      await _persistTokens(data);
 
       // Save session
       await _userSessionService.saveUserSession(
@@ -298,7 +288,6 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
         email: user.email,
         fullName: user.fullName,
         userName: user.userName,
-        role: user.role,
         phoneNumber: user.phoneNumber,
         profilePicture: user.profilePicture ?? '',
       );
