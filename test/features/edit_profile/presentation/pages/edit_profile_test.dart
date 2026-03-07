@@ -29,6 +29,13 @@ class FakeProfileViewModel extends ProfileViewModel {
     String? bloodGroup,
     String? gender,
     String? address,
+    String? emergencyContact,
+    // Doctor-specific fields
+    String? specialization,
+    String? qualifications,
+    int? experience,
+    double? consultationFee,
+    String? bio,
   }) async {
     updateCalled = true;
     state = const ProfileState(status: ProfileStatus.success);
