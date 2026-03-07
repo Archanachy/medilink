@@ -15,6 +15,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Set test credentials for development
+    _userController.text = 'patient@medilink.com';
+    _passwordController.text = 'password123';
+  }
+
+  @override
   void dispose() {
     _userController.dispose();
     _passwordController.dispose();
@@ -82,9 +90,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
+                        final email = _userController.text.trim();
+                        final password = _passwordController.text.trim();
+                        
+                        if (email.isEmpty || password.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please enter email and password'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                          return;
+                        }
+                        
                         ref.read(authViewModelProvider.notifier).login(
-                              email: _userController.text,
-                              password: _passwordController.text,
+                              email: email,
+                              password: password,
                             );
                       },
                       child: Padding(
@@ -96,7 +117,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/forgot-password');
+                      },
+                      child: Text(
+                        "Forgot Password?",
+                        style: TextStyle(fontSize: isTablet ? 16 : 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   TextButton(
                     onPressed: () {
                       Navigator.pushNamed(context, '/signup');

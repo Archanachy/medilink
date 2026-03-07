@@ -45,6 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>MediLink needs microphone access for video consultations</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>MediLink needs location access to show nearby hospitals</string>
 	<key>NSCameraUsageDescription</key>
 	<string>MediLink needs camera access to update your profile picture</string>
 	<key>NSPhotoLibraryUsageDescription</key>

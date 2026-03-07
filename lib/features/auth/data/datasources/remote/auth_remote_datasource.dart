@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:medilink/core/api/api_client.dart';
 import 'package:medilink/core/api/api_endpoints.dart';
 import 'package:medilink/core/services/storage/user_session_service.dart';
@@ -13,35 +15,139 @@ final authRemoteDataSourceProvider = Provider<IAuthRemoteDatasource>((ref) {
     userSessionService: ref.read(userSessionServiceProvider),
   );
 });
-class AuthRemoteDatasource implements IAuthRemoteDatasource{
+
+class AuthRemoteDatasource implements IAuthRemoteDatasource {
   final ApiClient _apiClient;
   final UserSessionService _userSessionService;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   AuthRemoteDatasource({
     required ApiClient apiClient,
     required UserSessionService userSessionService,
-  }) : _apiClient = apiClient,
-       _userSessionService = userSessionService;
+  })  : _apiClient = apiClient,
+        _userSessionService = userSessionService;
+
+  Map<String, dynamic> _extractUserData(Map<String, dynamic> data) {
+    final user = data['user'];
+    if (user is Map<String, dynamic>) {
+      return user;
+    }
+    return data;
+  }
+
+  String? _extractAccessToken(Map<String, dynamic> data) {
+    print('[TOKEN_EXTRACT] Attempting to extract access token from data');
+    print('[TOKEN_EXTRACT] Data keys: ${data.keys.toList()}');
+    
+    // Try standard locations
+    var token = data['token'] as String?;
+    if (token != null && token.isNotEmpty) {
+      print('[TOKEN_EXTRACT] Found token in data[token]');
+      return token;
+    }
+    
+    token = data['accessToken'] as String?;
+    if (token != null && token.isNotEmpty) {
+      print('[TOKEN_EXTRACT] Found token in data[accessToken]');
+      return token;
+    }
+    
+    token = data['access_token'] as String?;
+    if (token != null && token.isNotEmpty) {
+      print('[TOKEN_EXTRACT] Found token in data[access_token]');
+      return token;
+    }
+    
+    // Check if token is nested in user object
+    if (data['user'] is Map<String, dynamic>) {
+      final user = data['user'] as Map<String, dynamic>;
+      print('[TOKEN_EXTRACT] Checking nested user object: ${user.keys.toList()}');
+      
+      token = user['token'] as String?;
+      if (token != null && token.isNotEmpty) {
+        print('[TOKEN_EXTRACT] Found token in data[user][token]');
+        return token;
+      }
+      
+      token = user['accessToken'] as String?;
+      if (token != null && token.isNotEmpty) {
+        print('[TOKEN_EXTRACT] Found token in data[user][accessToken]');
+        return token;
+      }
+    }
+    
+    print('[TOKEN_EXTRACT] WARNING: Token not found in any expected location!');
+    print('[TOKEN_EXTRACT] Full data structure: $data');
+    return null;
+  }
+
+  String? _extractRefreshToken(Map<String, dynamic> data) {
+    return data['refreshToken'] as String? ??
+        data['refresh_token'] as String?;
+  }
+
+  Future<void> _persistTokens(Map<String, dynamic> data) async {
+    final token = _extractAccessToken(data);
+    final refreshToken = _extractRefreshToken(data);
+
+    print('[AUTH_PERSIST] Attempting to persist tokens');
+    print('[AUTH_PERSIST] Token to save: ${token != null ? 'YES (${token.substring(0, 20)}...)' : 'NO'}');
+    print('[AUTH_PERSIST] Refresh token to save: ${refreshToken != null ? 'YES' : 'NO'}');
+
+    if (token != null && token.isNotEmpty) {
+      await _secureStorage.write(key: 'auth_token', value: token);
+      print('[AUTH_PERSIST] Token saved to auth_token');
+    } else {
+      print('[AUTH_PERSIST] WARNING: Token not found or empty!');
+    }
+    
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      await _secureStorage.write(key: 'refresh_token', value: refreshToken);
+      print('[AUTH_PERSIST] Refresh token saved');
+    }
+  }
 
   @override
+  // ignore: no_leading_underscores_for_local_identifiers
   Future<AuthApiModel?> getUserById(String authId) {
-    // TODO: implement getUserById
     throw UnimplementedError();
   }
 
   @override
-  Future<AuthApiModel?> login(String email, String password) async{
+  Future<AuthApiModel?> login(String email, String password) async {
     final response = await _apiClient.post(
-      ApiEndpoints.userLogin,
+      ApiEndpoints.login,
       data: {
         'email': email,
         'password': password,
       },
     );
 
-    if(response.data['success'] == true){
+    if (response.data['success'] == true) {
       final data = response.data['data'] as Map<String, dynamic>;
-      final user = AuthApiModel.fromJson(data);
+      final topLevelToken = response.data['token'] as String?;
+      final nestedToken = _extractAccessToken(data);
+      final effectiveToken = topLevelToken ?? nestedToken;
+      
+      final userData = _extractUserData(data);
+      final extractedRefreshToken = _extractRefreshToken(data);
+      
+      final user = AuthApiModel.fromJson({
+        ...userData,
+        'token': effectiveToken,
+        'refreshToken': extractedRefreshToken,
+      });
+
+      if (kDebugMode) {
+        print('[LOGIN] User role from API response: "${user.role}"');
+      }
+
+      // Persist tokens
+      await _persistTokens({
+        ...data,
+        'token': effectiveToken,
+        'refreshToken': extractedRefreshToken,
+      });
 
       // Save to session
       await _userSessionService.saveUserSession(
@@ -49,6 +155,7 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource{
         email: user.email,
         fullName: user.fullName,
         userName: user.userName,
+        role: user.role,
         phoneNumber: user.phoneNumber,
         profilePicture: user.profilePicture ?? '',
       );
@@ -61,7 +168,7 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource{
   @override
   Future<AuthApiModel> register(AuthApiModel user) async {
     final response = await _apiClient.post(
-      ApiEndpoints.user,
+      ApiEndpoints.register,
       data: user.toJson(),
     );
 
@@ -71,5 +178,133 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource{
       return registeredUser;
     }
     return user;
+  }
+
+  @override
+  Future<bool> forgotPassword(String email) async {
+    final response = await _apiClient.post(
+      ApiEndpoints.forgotPassword,
+      data: {'email': email},
+    );
+    return response.data['success'] == true;
+  }
+
+  @override
+  Future<bool> resetPassword(String token, String newPassword) async {
+    final response = await _apiClient.post(
+      ApiEndpoints.resetPassword,
+      data: {
+        'token': token,
+        'newPassword': newPassword,
+      },
+    );
+    return response.data['success'] == true;
+  }
+
+  @override
+  Future<bool> verifyEmail(String token) async {
+    final response = await _apiClient.post(
+      ApiEndpoints.verifyEmail,
+      data: {'token': token},
+    );
+    return response.data['success'] == true;
+  }
+
+  @override
+  Future<String> refreshToken(String refreshToken) async {
+    final response = await _apiClient.post(
+      ApiEndpoints.refreshToken,
+      data: {'refreshToken': refreshToken},
+    );
+
+    if (response.data['success'] == true) {
+      final data = response.data['data'] as Map<String, dynamic>;
+      final newToken = (response.data['token'] as String?) ?? _extractAccessToken(data);
+      if (newToken == null || newToken.isEmpty) {
+        throw Exception('Token refresh failed');
+      }
+      await _persistTokens({
+        ...data,
+        'token': newToken,
+      });
+      return newToken;
+    }
+    throw Exception('Token refresh failed');
+  }
+
+  @override
+  Future<AuthApiModel?> loginWithGoogle(String idToken) async {
+    final response = await _apiClient.post(
+      '/auth/google',
+      data: {'idToken': idToken},
+    );
+
+    if (response.data['success'] == true) {
+      final data = response.data['data'] as Map<String, dynamic>;
+      final token = (response.data['token'] as String?) ?? _extractAccessToken(data);
+      final userData = _extractUserData(data);
+      final user = AuthApiModel.fromJson({
+        ...userData,
+        'token': token,
+        'refreshToken': _extractRefreshToken(data),
+      });
+
+      await _persistTokens({
+        ...data,
+        'token': token,
+      });
+
+      // Save session
+      await _userSessionService.saveUserSession(
+        userId: user.id!,
+        email: user.email,
+        fullName: user.fullName,
+        userName: user.userName,
+        role: user.role,
+        phoneNumber: user.phoneNumber,
+        profilePicture: user.profilePicture ?? '',
+      );
+
+      return user;
+    }
+    return null;
+  }
+
+  @override
+  Future<AuthApiModel?> loginWithApple(String authorizationCode) async {
+    final response = await _apiClient.post(
+      '/auth/apple',
+      data: {'authorizationCode': authorizationCode},
+    );
+
+    if (response.data['success'] == true) {
+      final data = response.data['data'] as Map<String, dynamic>;
+      final token = (response.data['token'] as String?) ?? _extractAccessToken(data);
+      final userData = _extractUserData(data);
+      final user = AuthApiModel.fromJson({
+        ...userData,
+        'token': token,
+        'refreshToken': _extractRefreshToken(data),
+      });
+
+      await _persistTokens({
+        ...data,
+        'token': token,
+      });
+
+      // Save session
+      await _userSessionService.saveUserSession(
+        userId: user.id!,
+        email: user.email,
+        fullName: user.fullName,
+        userName: user.userName,
+        role: user.role,
+        phoneNumber: user.phoneNumber,
+        profilePicture: user.profilePicture ?? '',
+      );
+
+      return user;
+    }
+    return null;
   }
 }

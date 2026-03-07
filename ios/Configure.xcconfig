@@ -1,0 +1,78 @@
+# iOS Build Configuration for MediLink
+# This file contains build settings for iOS release builds
+
+# Team ID (from Apple Developer Account)
+# Update this with your actual Team ID
+DEVELOPMENT_TEAM = XXXXXXXXXX
+
+# Bundle Identifier
+# Should match the app ID created in Apple Developer Portal
+PRODUCT_BUNDLE_IDENTIFIER = com.archana.medilink
+
+# Bundle Identifier for app extensions (if any)
+EXTENSION_BUNDLE_IDENTIFIER = com.archana.medilink.shareextension
+
+# Signing Certificate
+# Options: Automatic, Manual
+# For production: use specific Apple Distribution certificate
+CODE_SIGN_IDENTITY = Apple Distribution
+
+# Provisioning Profile
+# Should be the profile created for production/testing
+PROVISIONING_PROFILE_SPECIFIER = MediLink App Store
+
+# Development Provisioning Profile (for development builds)
+PROVISIONING_PROFILE_DEV = MediLink Development
+
+# Build Number (increment with each build)
+CURRENT_PROJECT_VERSION = 1
+
+# Marketing Version
+MARKETING_VERSION = 1.0.0
+
+# Minimum iOS Version
+IPHONEOS_DEPLOYMENT_TARGET = 12.0
+
+# Build Active Architecture Only
+ONLY_ACTIVE_ARCH = NO
+
+# Generate Debug Symbols
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+
+# Bitcode Enabled (optional, check App Store requirements)
+ENABLE_BITCODE = YES
+
+# Strip Debug Symbols (for release)
+STRIP_INSTALLED_PRODUCT = YES
+
+# Parallel Project Build
+# Speeds up build process
+NUM_JOBS = 8
+
+# Code Signing Entitlements
+CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements
+
+# Supported Platforms
+SUPPORTED_PLATFORMS = iphoneos
+
+# Valid Architectures
+VALID_ARCHS = arm64 arm64e
+
+# Architecture to build
+ARCHS = arm64
+
+# Optimization Level (for production)
+GCC_OPTIMIZATION_LEVEL = s
+
+# Warnings
+CLANG_WARN_SUSPICIOUS_MOVE = YES
+CLANG_WARN_COMMA = YES
+
+# Disable Code Coverage
+CLANG_COVERAGE_MAPPING = NO
+
+# Production App Store Build
+# Uncomment these for App Store release:
+# CODE_SIGN_IDENTITY = Apple Distribution
+# PROVISIONING_PROFILE_SPECIFIER = MediLink App Store
+# ENABLE_BITCODE = YES

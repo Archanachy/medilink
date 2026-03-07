@@ -33,7 +33,7 @@ class PatientRepository implements IPatientRepository {
       // email/username come from user endpoint; keep empty here
       return Right(model.toEntity(email: '', userName: ''));
     } catch (e) {
-      return Left(ApiFailure(message: e.toString()));
+      return const Left(ApiFailure(message: 'Failed to load patient'));
     }
   }
 
@@ -65,7 +65,7 @@ class PatientRepository implements IPatientRepository {
       );
       return Right(updated.toEntity(email: patient.email, userName: patient.userName));
     } catch (e) {
-      return Left(ApiFailure(message: e.toString()));
+      return const Left(ApiFailure(message: 'Failed to update patient'));
     }
   }
 }

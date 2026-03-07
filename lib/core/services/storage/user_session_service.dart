@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 // SharedPreferences instance provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -22,6 +23,7 @@ class UserSessionService {
   static const String _keyUserEmail = 'user_email';
   static const String _keyUserFullName = 'user_full_name';
   static const String _keyUserUsername = 'user_username';
+  static const String _keyUserRole = 'user_role';
   static const String _keyUserPhoneNumber = 'user_phone_number';
   static const String _keyUserProfilePicture = 'user_profile_picture';
 
@@ -33,15 +35,34 @@ class UserSessionService {
     required String email,
     required String fullName,
     required String userName,
+    String? role,
     String? phoneNumber,
     String? batchId,
     String? profilePicture,
   }) async {
+    if (kDebugMode) {
+      print('[SESSION] Saving user session - userId: $userId, role: "$role"');
+    }
+
+    // Always reset patient-scoped context on new login to avoid stale cross-role data.
+    await _prefs.remove(_keyPatientId);
+
     await _prefs.setBool(_keyIsLoggedIn, true);
     await _prefs.setString(_keyUserId, userId);
     await _prefs.setString(_keyUserEmail, email);
     await _prefs.setString(_keyUserFullName, fullName);
     await _prefs.setString(_keyUserUsername, userName);
+    if (role != null && role.isNotEmpty) {
+      await _prefs.setString(_keyUserRole, role);
+      if (kDebugMode) {
+        print('[SESSION] Role saved to SharedPreferences: "$role"');
+      }
+    } else {
+      await _prefs.remove(_keyUserRole);
+      if (kDebugMode) {
+        print('[SESSION] Role was null/empty, removed from SharedPreferences');
+      }
+    }
     if (phoneNumber != null) {
       await _prefs.setString(_keyUserPhoneNumber, phoneNumber);
     }
@@ -75,6 +96,15 @@ class UserSessionService {
     return _prefs.getString(_keyUserUsername);
   }
 
+  // Get current user role
+  String? getCurrentUserRole() {
+    final role = _prefs.getString(_keyUserRole);
+    if (kDebugMode) {
+      print('[SESSION] getCurrentUserRole() returning: "$role"');
+    }
+    return role;
+  }
+
   // Get current user phone number
   String? getCurrentUserPhoneNumber() {
     return _prefs.getString(_keyUserPhoneNumber);
@@ -103,6 +133,7 @@ class UserSessionService {
     await _prefs.remove(_keyUserEmail);
     await _prefs.remove(_keyUserFullName);
     await _prefs.remove(_keyUserUsername);
+    await _prefs.remove(_keyUserRole);
     await _prefs.remove(_keyUserPhoneNumber);
     await _prefs.remove(_keyUserProfilePicture);
   }

@@ -24,7 +24,6 @@ class RegisterUsecaseParams extends Equatable {
     required this.password,
   });
   @override
-  // TODO: implement props
   List<Object?> get props => [fullName, email, phoneNumber, userName, password];
 }
 
