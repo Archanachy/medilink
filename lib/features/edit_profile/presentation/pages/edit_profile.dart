@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medilink/core/services/storage/user_session_service.dart';
 import 'package:medilink/features/edit_profile/presentation/states/profile_state.dart';
 import 'package:medilink/features/edit_profile/presentation/view_model/profile_view_model.dart';
 import 'package:medilink/features/edit_profile/presentation/widgets/edit_profile_widgets.dart';
@@ -20,11 +21,29 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   final _bloodGroupController = TextEditingController();
   final _genderController = TextEditingController();
   final _addressController = TextEditingController();
+  
+  // Patient-specific
+  final _emergencyContactController = TextEditingController();
+  
+  // Doctor-specific
+  final _specializationController = TextEditingController();
+  final _qualificationsController = TextEditingController();
+  final _experienceController = TextEditingController();
+  final _consultationFeeController = TextEditingController();
+  final _bioController = TextEditingController();
+  
+  String? _userRole;
+  bool get _isDoctor => _userRole?.toLowerCase() == 'doctor';
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    // Get user role synchronously
+    final userSessionService = ref.read(userSessionServiceProvider);
+    _userRole = userSessionService.getCurrentUserRole();
+    
+    // Delay profile loading until after widget tree is done building
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(profileViewModelProvider.notifier).loadProfile();
     });
   }
@@ -38,6 +57,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     _bloodGroupController.dispose();
     _genderController.dispose();
     _addressController.dispose();
+    _emergencyContactController.dispose();
+    _specializationController.dispose();
+    _qualificationsController.dispose();
+    _experienceController.dispose();
+    _consultationFeeController.dispose();
+    _bioController.dispose();
     super.dispose();
   }
 
@@ -64,10 +89,24 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       _firstNameController.text = profileState.profile?.firstName ?? '';
       _lastNameController.text = profileState.profile?.lastName ?? '';
       _phoneController.text = profileState.profile?.phoneNumber ?? '';
-      _dateOfBirthController.text = profileState.profile?.dateOfBirth ?? '';
-      _bloodGroupController.text = profileState.profile?.bloodGroup ?? '';
-      _genderController.text = profileState.profile?.gender ?? '';
       _addressController.text = profileState.profile?.address ?? '';
+      
+      // Patient-specific fields
+      if (!_isDoctor) {
+        _dateOfBirthController.text = profileState.profile?.dateOfBirth ?? '';
+        _bloodGroupController.text = profileState.profile?.bloodGroup ?? '';
+        _genderController.text = profileState.profile?.gender ?? '';
+        _emergencyContactController.text = profileState.profile?.emergencyContact ?? '';
+      }
+      
+      // Doctor-specific fields
+      if (_isDoctor) {
+        _specializationController.text = profileState.profile?.specialization ?? '';
+        _qualificationsController.text = profileState.profile?.qualifications ?? '';
+        _experienceController.text = profileState.profile?.experience?.toString() ?? '';
+        _consultationFeeController.text = profileState.profile?.consultationFee?.toString() ?? '';
+        _bioController.text = profileState.profile?.bio ?? '';
+      }
     }
 
     final isTablet = MediaQuery.of(context).size.width >= 600;
@@ -136,78 +175,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
                     SizedBox(height: isTablet ? 24 : 16),
 
-                    // Date of Birth Field
-                    TextFormField(
-                      controller: _dateOfBirthController,
-                      decoration: buildInputDecoration(
-                        label: 'Date of Birth',
-                        icon: Icons.cake,
-                      ),
-                      readOnly: true,
-                      onTap: () async {
-                        final date = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now()
-                              .subtract(const Duration(days: 6570)),
-                          firstDate: DateTime(1900),
-                          lastDate: DateTime.now(),
-                        );
-                        if (date != null) {
-                          _dateOfBirthController.text =
-                              '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}/${date.year}';
-                        }
-                      },
-                    ),
-
-                    SizedBox(height: isTablet ? 24 : 16),
-
-                    // Blood Group Field
-                    DropdownButtonFormField<String>(
-                      value: _bloodGroupController.text.isEmpty
-                          ? null
-                          : _bloodGroupController.text,
-                      decoration: buildInputDecoration(
-                        label: 'Blood Group',
-                        icon: Icons.bloodtype,
-                      ),
-                      items: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-                          .map((group) => DropdownMenuItem(
-                                value: group,
-                                child: Text(group),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          _bloodGroupController.text = value;
-                        }
-                      },
-                    ),
-
-                    SizedBox(height: isTablet ? 24 : 16),
-
-                    // Gender Field
-                    DropdownButtonFormField<String>(
-                      value:
-                          _genderController.text.isEmpty ? null : _genderController.text,
-                      decoration: buildInputDecoration(
-                        label: 'Gender',
-                        icon: Icons.wc,
-                      ),
-                      items: const ['Male', 'Female', 'Other']
-                          .map((g) => DropdownMenuItem(
-                                value: g,
-                                child: Text(g),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          _genderController.text = value;
-                        }
-                      },
-                    ),
-
-                    SizedBox(height: isTablet ? 24 : 16),
-
                     // Address Field
                     TextFormField(
                       controller: _addressController,
@@ -217,6 +184,190 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       ),
                       maxLines: 2,
                     ),
+
+                    // === PATIENT-SPECIFIC FIELDS ===
+                    if (!_isDoctor) ...[
+                      SizedBox(height: isTablet ? 24 : 16),
+
+                      // Date of Birth Field
+                      TextFormField(
+                        controller: _dateOfBirthController,
+                        decoration: buildInputDecoration(
+                          label: 'Date of Birth',
+                          icon: Icons.cake,
+                        ),
+                        readOnly: true,
+                        onTap: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now()
+                                .subtract(const Duration(days: 6570)),
+                            firstDate: DateTime(1900),
+                            lastDate: DateTime.now(),
+                          );
+                          if (date != null) {
+                            _dateOfBirthController.text =
+                                '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}/${date.year}';
+                          }
+                        },
+                      ),
+
+                      SizedBox(height: isTablet ? 24 : 16),
+
+                      // Blood Group Field
+                      DropdownButtonFormField<String>(
+                        initialValue: _bloodGroupController.text.isEmpty
+                            ? null
+                            : _bloodGroupController.text,
+                        decoration: buildInputDecoration(
+                          label: 'Blood Group',
+                          icon: Icons.bloodtype,
+                        ),
+                        items: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+                            .map((group) => DropdownMenuItem(
+                                  value: group,
+                                  child: Text(group),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            _bloodGroupController.text = value;
+                          }
+                        },
+                      ),
+
+                      SizedBox(height: isTablet ? 24 : 16),
+
+                      // Gender Field
+                      DropdownButtonFormField<String>(
+                        initialValue:
+                            _genderController.text.isEmpty ? null : _genderController.text,
+                        decoration: buildInputDecoration(
+                          label: 'Gender',
+                          icon: Icons.wc,
+                        ),
+                        items: const ['Male', 'Female', 'Other']
+                            .map((g) => DropdownMenuItem(
+                                  value: g,
+                                  child: Text(g),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            _genderController.text = value;
+                          }
+                        },
+                      ),
+
+                      SizedBox(height: isTablet ? 24 : 16),
+
+                      // Emergency Contact Field
+                      TextFormField(
+                        controller: _emergencyContactController,
+                        decoration: buildInputDecoration(
+                          label: 'Emergency Contact',
+                          icon: Icons.contact_phone,
+                        ),
+                        keyboardType: TextInputType.phone,
+                      ),
+                    ],
+
+                    // === DOCTOR-SPECIFIC FIELDS ===
+                    if (_isDoctor) ...[
+                      SizedBox(height: isTablet ? 24 : 16),
+
+                      // Specialization Field
+                      TextFormField(
+                        controller: _specializationController,
+                        decoration: buildInputDecoration(
+                          label: 'Specialization',
+                          icon: Icons.medical_services,
+                        ),
+                        validator: (value) {
+                          if (_isDoctor && (value == null || value.isEmpty)) {
+                            return 'Please enter your specialization';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      SizedBox(height: isTablet ? 24 : 16),
+
+                      // Qualifications Field
+                      TextFormField(
+                        controller: _qualificationsController,
+                        decoration: buildInputDecoration(
+                          label: 'Qualifications',
+                          icon: Icons.school,
+                        ),
+                        validator: (value) {
+                          if (_isDoctor && (value == null || value.isEmpty)) {
+                            return 'Please enter your qualifications';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      SizedBox(height: isTablet ? 24 : 16),
+
+                      // Experience Field
+                      TextFormField(
+                        controller: _experienceController,
+                        decoration: buildInputDecoration(
+                          label: 'Experience (years)',
+                          icon: Icons.work,
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (_isDoctor && (value == null || value.isEmpty)) {
+                            return 'Please enter your experience';
+                          }
+                          if (_isDoctor && int.tryParse(value ?? '') == null) {
+                            return 'Please enter a valid number';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      SizedBox(height: isTablet ? 24 : 16),
+
+                      // Consultation Fee Field
+                      TextFormField(
+                        controller: _consultationFeeController,
+                        decoration: buildInputDecoration(
+                          label: 'Consultation Fee (\$)',
+                          icon: Icons.attach_money,
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        validator: (value) {
+                          if (_isDoctor && (value == null || value.isEmpty)) {
+                            return 'Please enter your consultation fee';
+                          }
+                          if (_isDoctor && double.tryParse(value ?? '') == null) {
+                            return 'Please enter a valid amount';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      SizedBox(height: isTablet ? 24 : 16),
+
+                      // Bio Field
+                      TextFormField(
+                        controller: _bioController,
+                        decoration: buildInputDecoration(
+                          label: 'Bio',
+                          icon: Icons.info_outline,
+                        ),
+                        maxLines: 4,
+                        validator: (value) {
+                          if (_isDoctor && (value == null || value.isEmpty)) {
+                            return 'Please enter your bio';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
 
                     SizedBox(height: isTablet ? 40 : 32),
 
@@ -228,22 +379,38 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             ? null
                             : () async {
                                 if (_formKey.currentState!.validate()) {
-                                  await ref
-                                      .read(profileViewModelProvider.notifier)
-                                      .updateProfile(
-                                        firstName:
-                                            _firstNameController.text.trim(),
-                                        lastName:
-                                            _lastNameController.text.trim(),
-                                        phoneNumber:
-                                            _phoneController.text.trim(),
-                                        dateOfBirth:
-                                            _dateOfBirthController.text.trim(),
-                                        bloodGroup:
-                                            _bloodGroupController.text.trim(),
-                                        gender: _genderController.text.trim(),
-                                        address: _addressController.text.trim(),
-                                      );
+                                  if (_isDoctor) {
+                                    // Doctor update - will need to update viewmodel to accept these
+                                    await ref
+                                        .read(profileViewModelProvider.notifier)
+                                        .updateProfile(
+                                          firstName:
+                                              _firstNameController.text.trim(),
+                                          lastName:
+                                              _lastNameController.text.trim(),
+                                          phoneNumber:
+                                              _phoneController.text.trim(),
+                                          address: _addressController.text.trim(),
+                                        );
+                                  } else {
+                                    // Patient update
+                                    await ref
+                                        .read(profileViewModelProvider.notifier)
+                                        .updateProfile(
+                                          firstName:
+                                              _firstNameController.text.trim(),
+                                          lastName:
+                                              _lastNameController.text.trim(),
+                                          phoneNumber:
+                                              _phoneController.text.trim(),
+                                          dateOfBirth:
+                                              _dateOfBirthController.text.trim(),
+                                          bloodGroup:
+                                              _bloodGroupController.text.trim(),
+                                          gender: _genderController.text.trim(),
+                                          address: _addressController.text.trim(),
+                                        );
+                                  }
                                 }
                               },
                         child: Padding(

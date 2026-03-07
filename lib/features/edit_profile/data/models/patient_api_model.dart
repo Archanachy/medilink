@@ -63,7 +63,7 @@ class PatientApiModel {
   }
 
   UserProfileEntity toEntity({required String email, required String userName}) {
-    String? _resolveImageUrl(String? path) {
+    String? resolveImageUrl(String? path) {
       if (path == null || path.isEmpty) return null;
       if (path.startsWith('http')) return path;
       return '${ApiEndpoints.baseUrl}$path';
@@ -78,7 +78,7 @@ class PatientApiModel {
       email: email,
       userName: userName,
       phoneNumber: phone,
-      profilePicture: _resolveImageUrl(profileImage),
+      profilePicture: resolveImageUrl(profileImage),
       dateOfBirth: dateOfBirth,
       bloodGroup: bloodGroup,
       gender: gender,

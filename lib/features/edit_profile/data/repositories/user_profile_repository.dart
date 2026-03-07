@@ -39,15 +39,13 @@ class UserProfileRepository implements IUserProfileRepository {
     try {
       final apiModel = await _remoteDatasource.getUserProfile();
       return Right(apiModel.toEntity());
-    } on DioException catch (e) {
-      return Left(
-        ApiFailure(
-          message: e.response?.data['message'] ?? 'Failed to load profile',
-          statusCode: e.response?.statusCode,
+    } on DioException {
+      return const Left(ApiFailure(
+          message: 'Failed to load profile',
         ),
       );
     } catch (e) {
-      return Left(ApiFailure(message: e.toString()));
+      return const Left(ApiFailure(message: 'Failed to load profile'));
     }
   }
 
@@ -65,15 +63,13 @@ class UserProfileRepository implements IUserProfileRepository {
       final apiModel = UserProfileApiModel.fromEntity(profile);
       final updatedModel = await _remoteDatasource.updateProfile(apiModel);
       return Right(updatedModel.toEntity());
-    } on DioException catch (e) {
-      return Left(
-        ApiFailure(
-          message: e.response?.data['message'] ?? 'Failed to update profile',
-          statusCode: e.response?.statusCode,
+    } on DioException {
+      return const Left(ApiFailure(
+          message: 'Failed to update profile',
         ),
       );
     } catch (e) {
-      return Left(ApiFailure(message: e.toString()));
+      return const Left(ApiFailure(message: 'Failed to update profile'));
     }
   }
 
@@ -88,15 +84,13 @@ class UserProfileRepository implements IUserProfileRepository {
     try {
       final photoUrl = await _remoteDatasource.uploadProfilePicture(imageFile);
       return Right(photoUrl);
-    } on DioException catch (e) {
-      return Left(
-        ApiFailure(
-          message: e.response?.data['message'] ?? 'Failed to upload photo',
-          statusCode: e.response?.statusCode,
+    } on DioException {
+      return const Left(ApiFailure(
+          message: 'Failed to upload photo',
         ),
       );
     } catch (e) {
-      return Left(ApiFailure(message: e.toString()));
+      return const Left(ApiFailure(message: 'Failed to upload photo'));
     }
   }
 }
