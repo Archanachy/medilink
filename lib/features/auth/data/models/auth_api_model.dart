@@ -7,6 +7,11 @@ class AuthApiModel {
   final String? phoneNumber;
   final String? password;
   final String? profilePicture;
+  final bool isEmailVerified;
+  final String? role;
+  final DateTime? createdAt;
+  final String? token;
+  final String? refreshToken;
 
   AuthApiModel({
     this.id,
@@ -15,6 +20,11 @@ class AuthApiModel {
     this.phoneNumber,
     this.password,
     this.profilePicture,
+    this.isEmailVerified = false,
+    this.role,
+    this.createdAt,
+    this.token,
+    this.refreshToken,
   });
 
   // Getter to derive userName from email
@@ -42,11 +52,18 @@ class AuthApiModel {
     final fullName = '$firstName $lastName'.trim();
 
     return AuthApiModel(
-      id: json['_id'] as String?,
-      fullName: fullName.isEmpty ? json['username'] as String : fullName,
+      id: json['_id'] as String? ?? json['id'] as String?,
+      fullName: fullName.isEmpty ? (json['username'] as String? ?? '') : fullName,
       email: json['email'] as String,
       phoneNumber: json['phoneNumber'] as String?,
       profilePicture: json['profilePicture'] as String?,
+      isEmailVerified: json['isEmailVerified'] as bool? ?? false,
+      role: json['role'] as String?,
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt'] as String) 
+          : null,
+      token: json['token'] as String?,
+      refreshToken: json['refreshToken'] as String?,
     );
   }
 
@@ -59,6 +76,9 @@ class AuthApiModel {
       phoneNumber: phoneNumber,
       userName: userName,
       profilePicture: profilePicture,
+      isEmailVerified: isEmailVerified,
+      role: role,
+      createdAt: createdAt,
     );
   }
 
@@ -70,6 +90,9 @@ class AuthApiModel {
       phoneNumber: entity.phoneNumber,
       password: entity.password,
       profilePicture: entity.profilePicture,
+      isEmailVerified: entity.isEmailVerified,
+      role: entity.role,
+      createdAt: entity.createdAt,
     );
   }
 

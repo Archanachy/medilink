@@ -11,7 +11,6 @@ import 'package:medilink/features/auth/data/models/auth_hive_model.dart';
 import 'package:medilink/features/auth/domain/enitities/auth_entity.dart';
 import 'package:medilink/features/auth/domain/repositories/auth_repository.dart';
 
-//provider
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   final authDatasource = ref.read(authLocalDatasourceProvider);
   final authRemoteDatasource = ref.read(authRemoteDataSourceProvider);
@@ -23,10 +22,7 @@ final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   );
 });
 
-
-// class AuthRepository implements IAuthRepository
-
-class AuthRepository implements IAuthRepository{
+class AuthRepository implements IAuthRepository {
   final IAuthLocalDatasource _authDatasource;
   final IAuthRemoteDatasource _authRemoteDataSource;
   final NetworkInfo _networkInfo;
@@ -35,11 +31,10 @@ class AuthRepository implements IAuthRepository{
     required IAuthLocalDatasource authDatasource,
     required IAuthRemoteDatasource authRemoteDataSource,
     required NetworkInfo networkInfo,
-  }) : _authDatasource = authDatasource,
-       _authRemoteDataSource = authRemoteDataSource,
-       _networkInfo = networkInfo;
+  })  : _authDatasource = authDatasource,
+        _authRemoteDataSource = authRemoteDataSource,
+        _networkInfo = networkInfo;
 
-  @override
   @override
   Future<Either<Failure, AuthEntity>> getCurrentUser() async {
     try {
@@ -67,15 +62,10 @@ class AuthRepository implements IAuthRepository{
           return Right(entity);
         }
         return const Left(ApiFailure(message: 'Invalid credentials'));
-      } on DioException catch (e) {
-        return Left(
-          ApiFailure(
-            message: e.response?.data['message'] ?? 'Login Failed',
-            statusCode: e.response?.statusCode,
-          ),
-        );
+      } on DioException {
+        return const Left(ApiFailure(message: 'Login failed'));
       } catch (e) {
-        return Left(ApiFailure(message: e.toString()));
+        return const Left(ApiFailure(message: 'Login failed'));
       }
     } else {
       try {
@@ -84,11 +74,9 @@ class AuthRepository implements IAuthRepository{
           final entity = model.toEntity();
           return Right(entity);
         }
-        return const Left(
-          LocalDatabaseFailure(message: 'Invalid email or password'),
-        );
+        return const Left(LocalDatabaseFailure(message: 'Invalid email or password'));
       } catch (e) {
-        return Left(LocalDatabaseFailure(message: e.toString()));
+        return const Left(LocalDatabaseFailure(message: 'Login failed'));
       }
     }
   }
@@ -102,7 +90,7 @@ class AuthRepository implements IAuthRepository{
       }
       return const Left(LocalDatabaseFailure(message: "Failed to logout"));
     } catch (e) {
-      return Left(LocalDatabaseFailure(message: e.toString()));
+      return const Left(LocalDatabaseFailure(message: 'Logout failed'));
     }
   }
 
@@ -110,28 +98,19 @@ class AuthRepository implements IAuthRepository{
   Future<Either<Failure, bool>> register(AuthEntity user) async {
     if (await _networkInfo.isConnected) {
       try {
-        // remote ma ja
         final apiModel = AuthApiModel.fromEntity(user);
         await _authRemoteDataSource.register(apiModel);
         return const Right(true);
-      } on DioException catch (e) {
-        return Left(
-          ApiFailure(
-            message: e.response?.data['message'] ?? 'Registration failed',
-            statusCode: e.response?.statusCode,
-          ),
-        );
+      } on DioException {
+        return const Left(ApiFailure(message: 'Registration failed'));
       } catch (e) {
-        return Left(ApiFailure(message: e.toString()));
+        return const Left(ApiFailure(message: 'Registration failed'));
       }
     } else {
       try {
-        // Check if email already exists
         final existingUser = await _authDatasource.isEmailExists(user.email);
         if (existingUser) {
-          return const Left(
-            LocalDatabaseFailure(message: "Email already registered"),
-          );
+          return const Left(LocalDatabaseFailure(message: "Email already registered"));
         }
 
         final authModel = AuthHiveModel(
@@ -145,8 +124,112 @@ class AuthRepository implements IAuthRepository{
         await _authDatasource.register(authModel);
         return const Right(true);
       } catch (e) {
-        return Left(LocalDatabaseFailure(message: e.toString()));
+        return const Left(LocalDatabaseFailure(message: 'Registration failed'));
       }
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> forgotPassword(String email) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final result = await _authRemoteDataSource.forgotPassword(email);
+        return Right(result);
+      } on DioException {
+        return const Left(ApiFailure(message: 'Failed to send reset email'));
+      } catch (e) {
+        return const Left(ApiFailure(message: 'Failed to send reset email'));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> resetPassword(String token, String newPassword) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final result = await _authRemoteDataSource.resetPassword(token, newPassword);
+        return Right(result);
+      } on DioException {
+        return const Left(ApiFailure(message: 'Failed to reset password'));
+      } catch (e) {
+        return const Left(ApiFailure(message: 'Failed to reset password'));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> verifyEmail(String token) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final result = await _authRemoteDataSource.verifyEmail(token);
+        return Right(result);
+      } on DioException {
+        return const Left(ApiFailure(message: 'Email verification failed'));
+      } catch (e) {
+        return const Left(ApiFailure(message: 'Email verification failed'));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> refreshToken(String refreshToken) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final newToken = await _authRemoteDataSource.refreshToken(refreshToken);
+        return Right(newToken);
+      } on DioException {
+        return const Left(ApiFailure(message: 'Token refresh failed'));
+      } catch (e) {
+        return const Left(ApiFailure(message: 'Token refresh failed'));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, AuthEntity>> loginWithGoogle(String idToken) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final apiModel = await _authRemoteDataSource.loginWithGoogle(idToken);
+        if (apiModel != null) {
+          final entity = apiModel.toEntity();
+          return Right(entity);
+        }
+        return const Left(ApiFailure(message: 'Google login failed'));
+      } on DioException {
+        return const Left(ApiFailure(message: 'Google login failed'));
+      } catch (e) {
+        return const Left(ApiFailure(message: 'Google login failed'));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, AuthEntity>> loginWithApple(String authorizationCode) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final apiModel = await _authRemoteDataSource.loginWithApple(authorizationCode);
+        if (apiModel != null) {
+          final entity = apiModel.toEntity();
+          return Right(entity);
+        }
+        return const Left(ApiFailure(message: 'Apple login failed'));
+      } on DioException {
+        return const Left(ApiFailure(message: 'Apple login failed'));
+      } catch (e) {
+        return const Left(ApiFailure(message: 'Apple login failed'));
+      }
+    } else {
+      return const Left(NetworkFailure());
     }
   }
 }
