@@ -7,6 +7,9 @@ import 'package:medilink/features/auth/presentation/view_model/auth_view_model.d
 import 'package:medilink/features/edit_profile/presentation/pages/edit_profile.dart';
 import 'package:medilink/features/edit_profile/presentation/states/profile_state.dart';
 import 'package:medilink/features/edit_profile/presentation/view_model/profile_view_model.dart';
+import 'package:medilink/features/medical_records/presentation/view_model/medical_record_view_model.dart';
+import 'package:medilink/features/settings/presentation/screens/settings_screen.dart';
+import 'package:medilink/features/medical_records/presentation/pages/records_list_screen.dart';
 import '../../widgets/info_card.dart';
 import '../../widgets/info_row.dart';
 import '../../widgets/menu_tile.dart';
@@ -22,17 +25,14 @@ class ProfileBottomScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileBottomScreenState extends ConsumerState<ProfileBottomScreen> {
-  final medicalReports = [
-    {'name': 'Blood Test Report', 'date': 'Jan 20, 2026', 'type': 'PDF'},
-    {'name': 'X-Ray Chest', 'date': 'Jan 15, 2026', 'type': 'Image'},
-    {'name': 'ECG Report', 'date': 'Dec 28, 2025', 'type': 'PDF'},
-  ];
-
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       ref.read(profileViewModelProvider.notifier).loadProfile();
+      ref
+          .read(medicalRecordViewModelProvider.notifier)
+          .fetchCurrentPatientRecords();
     });
   }
 
@@ -54,10 +54,26 @@ class _ProfileBottomScreenState extends ConsumerState<ProfileBottomScreen> {
         : (first + last).toUpperCase();
   }
 
+  String _reportTypeLabel(String type) {
+    final value = type.toLowerCase();
+    if (value.contains('pdf')) return 'PDF';
+    if (value.contains('image') ||
+        value.contains('jpg') ||
+        value.contains('png') ||
+        value.contains('jpeg')) {
+      return 'Image';
+    }
+    return 'File';
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileViewModelProvider);
+    final recordsState = ref.watch(medicalRecordViewModelProvider);
     final profile = profileState.profile;
+    final recentReports = List.of(recordsState.records)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final latestReports = recentReports.take(3).toList();
 
     if (profileState.status == ProfileStatus.loading) {
       return const Scaffold(
@@ -88,7 +104,7 @@ class _ProfileBottomScreenState extends ConsumerState<ProfileBottomScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -131,14 +147,16 @@ class _ProfileBottomScreenState extends ConsumerState<ProfileBottomScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: const [
-                        BoxShadow(
-                          blurRadius: 10,
-                          color: Colors.black12,
-                        ),
-                      ],
+                      boxShadow: Theme.of(context).brightness == Brightness.dark
+                          ? const []
+                          : const [
+                              BoxShadow(
+                                blurRadius: 10,
+                                color: Colors.black12,
+                              ),
+                            ],
                     ),
                     child: Column(
                       children: [
@@ -180,9 +198,11 @@ class _ProfileBottomScreenState extends ConsumerState<ProfileBottomScreen> {
                                   ),
                                   Text(
                                     '@${profile?.userName ?? 'username'}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
                                     ),
                                   ),
                                   const SizedBox(height: 6),
@@ -283,56 +303,115 @@ class _ProfileBottomScreenState extends ConsumerState<ProfileBottomScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: MiniCard(
-                              label: 'Username',
-                              value: profile?.userName ?? 'N/A',
+                              label: 'Gender',
+                              value: profile?.gender ?? 'N/A',
                               color: Colors.blue,
                             ),
                           ),
                         ],
-                      )
+                      ),
+                      const SizedBox(height: 16),
+                      const InfoRow(
+                        icon: Icons.warning_amber,
+                        label: 'Allergies',
+                        value: 'Not provided',
+                      ),
+                      const InfoRow(
+                        icon: Icons.medical_information,
+                        label: 'Chronic Illnesses',
+                        value: 'Not provided',
+                      ),
+                      const InfoRow(
+                        icon: Icons.person_add_alt,
+                        label: 'Emergency Contact',
+                        value: 'Not provided',
+                      ),
                     ],
                   ),
-                  const MenuTile(
-                      icon: Icons.description, label: 'My Reports', count: 3),
-                  const MenuTile(
-                      icon: Icons.calendar_today, label: 'Medical History'),
-                  const MenuTile(icon: Icons.settings, label: 'Settings'),
+                  MenuTile(
+                    icon: Icons.description,
+                    label: 'My Reports',
+                    count: recordsState.records.length,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RecordsListScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  MenuTile(
+                    icon: Icons.calendar_today,
+                    label: 'Prescriptions',
+                    onTap: () {
+                      Navigator.pushNamed(context, '/prescriptions');
+                    },
+                  ),
+                  MenuTile(
+                    icon: Icons.settings,
+                    label: 'Settings',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                  ),
                   InfoCard(
                     title: 'Recent Reports',
                     trailing: TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const RecordsListScreen(),
+                          ),
+                        );
+                      },
                       child: const Text('View All'),
                     ),
-                    children: medicalReports
-                        .map(
-                          (r) => ListTile(
-                            leading: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.blue[100],
-                                borderRadius: BorderRadius.circular(8),
+                    children: latestReports.isEmpty
+                        ? const [
+                            ListTile(
+                              title: Text('No reports found'),
+                              subtitle:
+                                  Text('Your recent reports will appear here'),
+                            ),
+                          ]
+                        : latestReports
+                            .map(
+                              (r) => ListTile(
+                                leading: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue[100],
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.description,
+                                      color: Colors.blue),
+                                ),
+                                title: Text(
+                                    r.title.isNotEmpty ? r.title : 'Report'),
+                                subtitle: Text(DateFormat('MMM dd, yyyy')
+                                    .format(r.createdAt)),
+                                trailing: Text(
+                                  _reportTypeLabel(r.type),
+                                  style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                                ),
                               ),
-                              child: const Icon(Icons.description,
-                                  color: Colors.blue),
-                            ),
-                            title: Text(r['name']!),
-                            subtitle: Text(r['date']!),
-                            trailing: Text(
-                              r['type']!,
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.upload_file),
-                    label: const Text('Upload New Report'),
+                            )
+                            .toList(),
                   ),
                   const SizedBox(height: 16),
                   ListTile(
-                    tileColor: Colors.white,
+                    tileColor: Theme.of(context).colorScheme.surface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
