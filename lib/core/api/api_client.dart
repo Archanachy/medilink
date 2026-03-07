@@ -106,6 +106,21 @@ class ApiClient {
     );
   }
 
+  // PATCH request
+  Future<Response> patch(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    return _dio.patch(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
+  }
+
   // DELETE request
   Future<Response> delete(
     String path, {
@@ -141,44 +156,180 @@ class ApiClient {
 class _AuthInterceptor extends Interceptor {
   final _storage = const FlutterSecureStorage();
   static const String _tokenKey = 'auth_token';
+  static const String _refreshTokenKey = 'refresh_token';
+
+  Future<String?> _readAccessToken() async {
+    if (kDebugMode) {
+      print('[TOKEN_READ] Reading token from secure storage...');
+    }
+
+    final token = await _storage.read(key: _tokenKey);
+    if (kDebugMode) {
+      print(
+          '[TOKEN_READ] Token read from auth_token: ${token != null ? 'YES (${token.substring(0, 20)}...)' : 'NO'}');
+    }
+
+    if (token != null && token.isNotEmpty) {
+      return token;
+    }
+
+    final fallbackToken = await _storage.read(key: 'access_token');
+    if (kDebugMode) {
+      print(
+          '[TOKEN_READ] Token read from access_token: ${fallbackToken != null ? 'YES' : 'NO'}');
+    }
+
+    if (fallbackToken != null && fallbackToken.isNotEmpty) {
+      return fallbackToken;
+    }
+
+    if (kDebugMode) {
+      print('[TOKEN_READ] NO TOKEN FOUND in secure storage!');
+    }
+    return null;
+  }
+
+  Future<String?> _readRefreshToken() async {
+    final refreshToken = await _storage.read(key: _refreshTokenKey);
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      return refreshToken;
+    }
+
+    final fallbackRefresh = await _storage.read(key: 'refreshToken');
+    if (fallbackRefresh != null && fallbackRefresh.isNotEmpty) {
+      return fallbackRefresh;
+    }
+
+    return null;
+  }
+
+  String? _extractAccessToken(dynamic data) {
+    if (data is! Map<String, dynamic>) {
+      return null;
+    }
+    return data['token'] as String? ??
+        data['accessToken'] as String? ??
+        data['access_token'] as String?;
+  }
+
+  String? _extractRefreshToken(dynamic data) {
+    if (data is! Map<String, dynamic>) {
+      return null;
+    }
+    return data['refreshToken'] as String? ?? data['refresh_token'] as String?;
+  }
 
   @override
-  void onRequest(
+  Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
     // Skip auth for public endpoints
     final publicEndpoints = [
-      ApiEndpoints.categories,
-      ApiEndpoints.userLogin,
+      ApiEndpoints.login,
+      ApiEndpoints.register,
+      ApiEndpoints.forgotPassword,
+      ApiEndpoints.resetPassword,
+      ApiEndpoints.verifyEmail,
+      ApiEndpoints.googleAuth,
+      ApiEndpoints.appleAuth,
     ];
 
-    final isPublicGet =
-        options.method == 'GET' &&
-        publicEndpoints.any((endpoint) => options.path.startsWith(endpoint));
+    final isPublicGet = options.method == 'GET' &&
+        publicEndpoints.any((endpoint) => options.path.contains(endpoint));
 
-    final isAuthEndpoint =
-        options.path == ApiEndpoints.userLogin ||
-        options.path == ApiEndpoints.user;
+    final isAuthEndpoint = publicEndpoints.any(
+      (endpoint) => options.path.contains(endpoint),
+    );
 
     if (!isPublicGet && !isAuthEndpoint) {
-      final token = await _storage.read(key: _tokenKey);
-      if (token != null) {
+      final token = await _readAccessToken();
+      if (kDebugMode) {
+        print(
+            '[AUTH_INTERCEPTOR] Token read: ${token != null ? 'YES (${token.substring(0, 20)}...)' : 'NO'} for ${options.path}');
+        print('[AUTH_INTERCEPTOR] Headers before: ${options.headers}');
+      }
+      if (token != null && token.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $token';
+        if (kDebugMode) {
+          print(
+              '[AUTH_INTERCEPTOR] Authorization header added for ${options.path}');
+          print('[AUTH_INTERCEPTOR] Headers after: ${options.headers}');
+        }
+      } else {
+        if (kDebugMode) {
+          print(
+              '[AUTH_INTERCEPTOR] WARNING: No token available for protected endpoint: ${options.path}');
+        }
       }
     }
 
-    handler.next(options);
+    return handler.next(options);
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
+  Future<void> onError(
+      DioException err, ErrorInterceptorHandler handler) async {
     // Handle 401 Unauthorized - token expired
     if (err.response?.statusCode == 401) {
-      // Clear token and redirect to login
-      _storage.delete(key: _tokenKey);
-      // You can add navigation logic here or use a callback
+      // Try to refresh token
+      final refreshToken = await _readRefreshToken();
+
+      if (refreshToken != null) {
+        try {
+          // Attempt token refresh
+          final dio = Dio(BaseOptions(baseUrl: ApiEndpoints.baseUrl));
+          final response = await dio.post(
+            ApiEndpoints.refreshToken,
+            data: {'refreshToken': refreshToken},
+          );
+
+          if (response.data['success'] == true) {
+            final data = response.data['data'];
+            final newToken = _extractAccessToken(data);
+            final newRefreshToken = _extractRefreshToken(data);
+            if (newToken == null || newToken.isEmpty) {
+              throw Exception('Token refresh failed');
+            }
+
+            // Cache and save new tokens
+            await _storage.write(key: _tokenKey, value: newToken);
+            if (newRefreshToken != null) {
+              await _storage.write(
+                  key: _refreshTokenKey, value: newRefreshToken);
+            }
+
+            // Retry the original request with new token
+            err.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+            final opts = Options(
+              method: err.requestOptions.method,
+              headers: err.requestOptions.headers,
+            );
+
+            final cloneDio = Dio(BaseOptions(baseUrl: ApiEndpoints.baseUrl));
+            final retryResponse = await cloneDio.request(
+              err.requestOptions.path,
+              options: opts,
+              data: err.requestOptions.data,
+              queryParameters: err.requestOptions.queryParameters,
+            );
+
+            return handler.resolve(retryResponse);
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('[AUTH_INTERCEPTOR] Token refresh failed: $e');
+          }
+          // Token refresh failed, clear tokens
+          await _storage.delete(key: _tokenKey);
+          await _storage.delete(key: _refreshTokenKey);
+        }
+      } else {
+        // No refresh token, clear auth token
+        await _storage.delete(key: _tokenKey);
+      }
     }
-    handler.next(err);
+
+    return handler.next(err);
   }
 }

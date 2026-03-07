@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <!-- Firebase Configuration for Release Build -->
+    <!-- Update these values with your actual Firebase project configuration -->
+    <string name="firebase_database_url">https://medilink-prod.firebaseio.com</string>
+    <string name="firebase_project_id">medilink-prod</string>
+    <string name="google_api_key">your_google_api_key</string>
+    <string name="google_app_id">1:987654321:android:9876543210fedcba</string>
+    <string name="google_storage_bucket">medilink-prod.appspot.com</string>
+</resources>
