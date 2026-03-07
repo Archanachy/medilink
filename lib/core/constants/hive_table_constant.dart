@@ -6,4 +6,18 @@ class HiveTableConstant {
 
   static const int authTypeId = 0;
   static const String authTable = 'auth_table';
+
+  static const int doctorTypeId = 1;
+  static const String doctorTable = 'doctor_table';
+
+  static const int appointmentTypeId = 2;
+  static const String appointmentTable = 'appointment_table';
+
+  static const int medicalRecordTypeId = 3;
+  static const String medicalRecordTable = 'medical_record_table';
+
+  static const int prescriptionTypeId = 10;
+  static const String prescriptionTable = 'prescription_table';
+  
+  static const int medicationTypeId = 11;
 }
