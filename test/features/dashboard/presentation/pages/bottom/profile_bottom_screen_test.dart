@@ -5,6 +5,8 @@ import 'package:medilink/features/dashboard/presentation/pages/bottom/profile_bo
 import 'package:medilink/features/edit_profile/domain/enitities/user_profile_entity.dart';
 import 'package:medilink/features/edit_profile/presentation/states/profile_state.dart';
 import 'package:medilink/features/edit_profile/presentation/view_model/profile_view_model.dart';
+import 'package:medilink/features/medical_records/presentation/states/medical_record_state.dart';
+import 'package:medilink/features/medical_records/presentation/view_model/medical_record_view_model.dart';
 
 class FakeProfileViewModel extends ProfileViewModel {
   final ProfileState _initial;
@@ -19,6 +21,19 @@ class FakeProfileViewModel extends ProfileViewModel {
   }
 }
 
+class FakeMedicalRecordViewModel extends MedicalRecordViewModel {
+  final MedicalRecordState _initial;
+  FakeMedicalRecordViewModel(this._initial);
+
+  @override
+  MedicalRecordState build() => _initial;
+
+  @override
+  Future<void> fetchCurrentPatientRecords() async {
+    // no-op for tests
+  }
+}
+
 void main() {
   group('ProfileBottomScreen', () {
     testWidgets('shows loading indicator', (tester) async {
@@ -29,6 +44,11 @@ void main() {
             profileViewModelProvider.overrideWith(
               () => FakeProfileViewModel(
                 const ProfileState(status: ProfileStatus.loading),
+              ),
+            ),
+            medicalRecordViewModelProvider.overrideWith(
+              () => FakeMedicalRecordViewModel(
+                const MedicalRecordState(status: MedicalRecordStatus.success),
               ),
             ),
           ],
@@ -54,6 +74,11 @@ void main() {
                   status: ProfileStatus.error,
                   errorMessage: 'Failed to load profile',
                 ),
+              ),
+            ),
+            medicalRecordViewModelProvider.overrideWith(
+              () => FakeMedicalRecordViewModel(
+                const MedicalRecordState(status: MedicalRecordStatus.success),
               ),
             ),
           ],
@@ -88,6 +113,11 @@ void main() {
                   status: ProfileStatus.loaded,
                   profile: profile,
                 ),
+              ),
+            ),
+            medicalRecordViewModelProvider.overrideWith(
+              () => FakeMedicalRecordViewModel(
+                const MedicalRecordState(status: MedicalRecordStatus.success),
               ),
             ),
           ],

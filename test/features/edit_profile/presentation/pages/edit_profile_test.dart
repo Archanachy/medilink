@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:medilink/core/services/storage/user_session_service.dart';
 import 'package:medilink/features/edit_profile/domain/enitities/user_profile_entity.dart';
 import 'package:medilink/features/edit_profile/presentation/pages/edit_profile.dart';
 import 'package:medilink/features/edit_profile/presentation/states/profile_state.dart';
 import 'package:medilink/features/edit_profile/presentation/view_model/profile_view_model.dart';
+
+class MockUserSessionService extends Mock implements UserSessionService {}
 
 class FakeProfileViewModel extends ProfileViewModel {
   final ProfileState _initial;
@@ -43,12 +47,21 @@ class FakeProfileViewModel extends ProfileViewModel {
 }
 
 void main() {
+  late MockUserSessionService mockUserSessionService;
+
+  setUp(() {
+    mockUserSessionService = MockUserSessionService();
+    when(() => mockUserSessionService.getCurrentUserRole()).thenReturn('patient');
+  });
+
   group('EditProfilePage', () {
     testWidgets('shows loading indicator', (tester) async {
       // Arrange
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            userSessionServiceProvider
+                .overrideWith((ref) => mockUserSessionService),
             profileViewModelProvider.overrideWith(
               () => FakeProfileViewModel(
                 const ProfileState(status: ProfileStatus.loading),
@@ -84,6 +97,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            userSessionServiceProvider
+                .overrideWith((ref) => mockUserSessionService),
             profileViewModelProvider.overrideWith(() => fakeVm),
           ],
           child: const MaterialApp(home: EditProfilePage()),

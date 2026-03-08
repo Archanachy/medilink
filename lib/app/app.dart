@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medilink/app/navigation/app_navigator.dart';
 import 'package:medilink/app/theme/theme_mode_provider.dart';
 import 'package:medilink/app/theme/theme_data.dart';
+import 'package:medilink/core/widgets/shake_to_logout_wrapper.dart';
 import 'package:medilink/features/auth/presentation/pages/forgot_password_screen.dart';
 import 'package:medilink/features/auth/presentation/pages/login_screen.dart';
 import 'package:medilink/features/auth/presentation/pages/reset_password_screen.dart';
@@ -45,8 +46,12 @@ class MediLinkApp extends ConsumerWidget {
 
       themeMode: appThemeMode,
 
+      builder: (context, child) {
+        return ShakeToLogoutWrapper(child: child ?? const SizedBox.shrink());
+      },
+
       initialRoute: '/',
-      routes: {
+        routes: {
         '/': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),

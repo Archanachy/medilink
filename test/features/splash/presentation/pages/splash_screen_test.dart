@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:medilink/core/services/storage/user_session_service.dart';
@@ -10,10 +11,26 @@ import 'package:medilink/features/splash/presentation/pages/splash_screen.dart';
 class MockUserSessionService extends Mock implements UserSessionService {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late MockUserSessionService mockSession;
+  const secureStorageChannel =
+      MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+  String? mockedToken;
 
   setUp(() {
     mockSession = MockUserSessionService();
+    mockedToken = null;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureStorageChannel, (call) async {
+      if (call.method == 'read') return mockedToken;
+      return null;
+    });
+  });
+
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureStorageChannel, null);
   });
 
   Future<void> pumpSplash(WidgetTester tester) async {
@@ -31,11 +48,12 @@ void main() {
     testWidgets('navigates to Dashboard when logged in', (tester) async {
       // Arrange
       when(() => mockSession.isLoggedIn()).thenReturn(true);
+      mockedToken = 'auth-token';
 
       // Act
       await pumpSplash(tester);
       // Splash animates ~3s before navigating; give enough time
-      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
 
       // Assert
@@ -45,10 +63,11 @@ void main() {
     testWidgets('navigates to Onboarding when not logged in', (tester) async {
       // Arrange
       when(() => mockSession.isLoggedIn()).thenReturn(false);
+      mockedToken = null;
 
       // Act
       await pumpSplash(tester);
-      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
 
       // Assert

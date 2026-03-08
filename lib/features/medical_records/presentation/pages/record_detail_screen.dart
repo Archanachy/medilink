@@ -243,15 +243,6 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailScreen> {
                 const SizedBox(height: 6),
                 _buildPrescriptionsSection(context, prescriptionState),
                 const SizedBox(height: 16),
-                Text(
-                  'File: ${record.fileUrl}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-                Text(
-                  'Full URL: $fullImageUrl',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-                const SizedBox(height: 16),
                 Expanded(
                   child: isPdf
                       ? PdfViewerWidget(url: fullImageUrl)

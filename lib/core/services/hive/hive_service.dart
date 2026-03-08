@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:medilink/core/constants/hive_table_constant.dart';
+import 'package:medilink/core/models/user_profile_hive_model.dart';
+import 'package:medilink/core/services/offline_queue/models/queued_action.dart';
 import 'package:medilink/features/auth/data/models/auth_hive_model.dart';
 import 'package:medilink/features/appointments/data/models/appointment_hive_model.dart';
 import 'package:medilink/features/doctors/data/models/doctor_hive_model.dart';
@@ -44,6 +46,14 @@ class HiveService {
 
     if(!Hive.isAdapterRegistered(HiveTableConstant.medicationTypeId)){
       Hive.registerAdapter(MedicationHiveModelAdapter());
+    }
+
+    if(!Hive.isAdapterRegistered(HiveTableConstant.queuedActionTypeId)){
+      Hive.registerAdapter(QueuedActionAdapter());
+    }
+
+    if(!Hive.isAdapterRegistered(HiveTableConstant.userProfileTypeId)){
+      Hive.registerAdapter(UserProfileHiveModelAdapter());
     }
   }
 

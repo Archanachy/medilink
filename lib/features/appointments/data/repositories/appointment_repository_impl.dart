@@ -1,14 +1,17 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medilink/core/error/failures.dart';
 import 'package:medilink/core/services/connectivity/network_info.dart';
+import 'package:medilink/core/services/offline_queue/offline_queue_service.dart';
 import 'package:medilink/features/appointments/data/datasources/appointment_local_datasource.dart';
 import 'package:medilink/features/appointments/data/datasources/appointment_remote_datasource.dart';
 import 'package:medilink/features/appointments/data/models/appointment_api_model.dart';
 import 'package:medilink/features/appointments/data/models/appointment_hive_model.dart';
 import 'package:medilink/features/appointments/domain/entities/appointment_entity.dart';
 import 'package:medilink/features/appointments/domain/repositories/appointment_repository.dart';
+import 'package:uuid/uuid.dart';
 
 final appointmentRepositoryProvider = Provider<IAppointmentRepository>((ref) {
   final remote = ref.read(appointmentRemoteDatasourceProvider);
@@ -45,28 +48,78 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
     String? reason,
     String? symptoms,
   }) async {
-    if (!await _networkInfo.isConnected) {
-      return const Left(NetworkFailure());
-    }
-
-    try {
-      final model = await _remoteDataSource.bookAppointment(
-        doctorId: doctorId,
-        patientId: patientId,
-        date: date,
-        startTime: startTime,
-        endTime: endTime,
-        reason: reason,
-        symptoms: symptoms,
-      );
-      return Right(model.toEntity());
-    } on DioException {
-      return const Left(ApiFailure(
-          message: 'Failed to book appointment',
-        ),
-      );
-    } catch (e) {
-      return const Left(ApiFailure(message: 'Failed to book appointment'));
+    if (await _networkInfo.isConnected) {
+      // Online - book immediately
+      try {
+        final model = await _remoteDataSource.bookAppointment(
+          doctorId: doctorId,
+          patientId: patientId,
+          date: date,
+          startTime: startTime,
+          endTime: endTime,
+          reason: reason,
+          symptoms: symptoms,
+        );
+        
+        // Cache the booked appointment
+        final hiveModel = AppointmentHiveModel.fromEntity(model.toEntity());
+        await _localDataSource.cacheAppointments([hiveModel]);
+        
+        return Right(model.toEntity());
+      } on DioException {
+        return const Left(ApiFailure(message: 'Failed to book appointment'));
+      } catch (e) {
+        return const Left(ApiFailure(message: 'Failed to book appointment'));
+      }
+    } else {
+      // Offline - queue for later
+      try {
+        final appointmentId = const Uuid().v4();
+        
+        // Create pending appointment entity
+        final pendingAppointment = AppointmentEntity(
+          id: appointmentId,
+          doctorId: doctorId,
+          patientId: patientId,
+          patientName: 'Loading...', // Will sync from server
+          doctorName: 'Loading...', // Will sync from server
+          appointmentDate: date,
+          startTime: startTime,
+          endTime: endTime,
+          status: 'pending', // Mark as pending
+          reason: reason,
+          consultationFee: 0, // Will sync from server
+          createdAt: DateTime.now(),
+        );
+        
+        // Cache the pending appointment locally
+        final hiveModel = AppointmentHiveModel.fromEntity(pendingAppointment);
+        await _localDataSource.cacheAppointments([hiveModel]);
+        
+        // Queue the action for syncing
+        await OfflineQueueService().queueAction(
+          actionType: 'BOOK_APPOINTMENT',
+          endpoint: '/appointments',
+          data: {
+            'id': appointmentId,
+            'doctorId': doctorId,
+            'patientId': patientId,
+            'date': date.toIso8601String(),
+            'startTime': startTime,
+            'endTime': endTime,
+            'reason': reason,
+            'symptoms': symptoms,
+          },
+        );
+        
+        debugPrint('📅 Appointment queued offline: $appointmentId');
+        
+        return Right(pendingAppointment);
+      } catch (e) {
+        return Left(LocalDatabaseFailure(
+          message: 'Failed to queue appointment: $e',
+        ));
+      }
     }
   }
 

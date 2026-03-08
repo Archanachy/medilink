@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:medilink/core/services/analytics/analytics_service.dart';
@@ -11,6 +12,7 @@ import 'package:medilink/features/auth/domain/usecases/register_usecase.dart';
 import 'package:medilink/features/auth/domain/usecases/reset_password_usecase.dart';
 import 'package:medilink/features/auth/domain/usecases/verify_email_usecase.dart';
 import 'package:medilink/features/auth/presentation/states/auth_state.dart';
+import 'package:medilink/features/edit_profile/domain/usecases/get_patient_by_user_id_usecase.dart';
 
 // provider
 final authViewModelProvider =
@@ -25,6 +27,7 @@ class AuthViewModel extends Notifier<AuthState> {
   late final VerifyEmailUsecase _verifyEmailUsecase;
   late final RefreshTokenUsecase _refreshTokenUsecase;
   late final LoginWithGoogleUsecase _loginWithGoogleUsecase;
+  late final GetPatientByUserIdUsecase _getPatientByUserIdUsecase;
   final AnalyticsService _analytics = AnalyticsService.instance;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
@@ -45,6 +48,7 @@ class AuthViewModel extends Notifier<AuthState> {
     _verifyEmailUsecase = ref.read(verifyEmailUsecaseProvider);
     _refreshTokenUsecase = ref.read(refreshTokenUsecaseProvider);
     _loginWithGoogleUsecase = ref.read(loginWithGoogleUsecaseProvider);
+    _getPatientByUserIdUsecase = ref.read(getPatientByUserIdUsecaseProvider);
     return const AuthState();
   }
 
@@ -64,14 +68,14 @@ class AuthViewModel extends Notifier<AuthState> {
       password: password,
     );
     final result = await _registerUsecase(params);
-    result.fold(
-      (failure) {
+    await result.fold<Future<void>>(
+      (failure) async {
         state = state.copyWith(
           status: AuthStatus.error,
           errorMessage: failure.message,
         );
       },
-      (isRegistered) {
+      (isRegistered) async {
         if (isRegistered) {
           state = state.copyWith(status: AuthStatus.registered);
           _analytics.logSignUp(method: 'email');
@@ -92,18 +96,45 @@ class AuthViewModel extends Notifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading);
     final params = LoginUsecaseParams(email: email, password: password);
     final result = await _loginUsecase(params);
-    result.fold(
-      (failure) {
+    await result.fold<Future<void>>(
+      (failure) async {
         state = state.copyWith(
           status: AuthStatus.error,
           errorMessage: failure.message,
         );
       },
-      (user) {
+      (user) async {
         state = state.copyWith(
           status: AuthStatus.authenticated,
           user: user,
         );
+        
+        // If user is a patient, fetch and save patient ID immediately
+        final userRole = ref.read(userSessionServiceProvider).getCurrentUserRole();
+        if (userRole?.toLowerCase() == 'patient') {
+          final userId = ref.read(userSessionServiceProvider).getCurrentUserId();
+          if (userId != null) {
+            if (kDebugMode) {
+              print('[AUTH] Patient logged in, fetching patient ID for userId: $userId');
+            }
+            final patientResult = await _getPatientByUserIdUsecase(userId);
+            patientResult.fold(
+              (failure) {
+                if (kDebugMode) {
+                  print('[AUTH] Failed to fetch patient ID: ${failure.message}');
+                }
+              },
+              (profile) {
+                if (profile.patientId != null && profile.patientId!.isNotEmpty) {
+                  ref.read(userSessionServiceProvider).savePatientId(profile.patientId!);
+                  if (kDebugMode) {
+                    print('[AUTH] Patient ID saved: ${profile.patientId}');
+                  }
+                }
+              },
+            );
+          }
+        }
       },
     );
   }
@@ -214,18 +245,45 @@ class AuthViewModel extends Notifier<AuthState> {
     final params = LoginWithGoogleParams(idToken: idToken);
     final result = await _loginWithGoogleUsecase(params);
 
-    result.fold(
-      (failure) {
+    await result.fold<Future<void>>(
+      (failure) async {
         state = state.copyWith(
           status: AuthStatus.error,
           errorMessage: failure.message,
         );
       },
-      (user) {
+      (user) async {
         state = state.copyWith(
           status: AuthStatus.authenticated,
           user: user,
         );
+        
+        // If user is a patient, fetch and save patient ID immediately
+        final userRole = ref.read(userSessionServiceProvider).getCurrentUserRole();
+        if (userRole?.toLowerCase() == 'patient') {
+          final userId = ref.read(userSessionServiceProvider).getCurrentUserId();
+          if (userId != null) {
+            if (kDebugMode) {
+              print('[AUTH] Patient logged in via Google, fetching patient ID for userId: $userId');
+            }
+            final patientResult = await _getPatientByUserIdUsecase(userId);
+            patientResult.fold(
+              (failure) {
+                if (kDebugMode) {
+                  print('[AUTH] Failed to fetch patient ID: ${failure.message}');
+                }
+              },
+              (profile) {
+                if (profile.patientId != null && profile.patientId!.isNotEmpty) {
+                  ref.read(userSessionServiceProvider).savePatientId(profile.patientId!);
+                  if (kDebugMode) {
+                    print('[AUTH] Patient ID saved: ${profile.patientId}');
+                  }
+                }
+              },
+            );
+          }
+        }
       },
     );
   }

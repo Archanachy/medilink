@@ -12,4 +12,16 @@ void main() {
     );
     expect(find.text('Doctors'), findsOneWidget);
   });
+
+  testWidgets('Doctors list screen shows filter controls', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: DoctorsListScreen()),
+      ),
+    );
+
+    expect(find.text('Search doctors'), findsOneWidget);
+    expect(find.text('Specialization'), findsOneWidget);
+    expect(find.text('Apply Filters'), findsOneWidget);
+  });
 }
