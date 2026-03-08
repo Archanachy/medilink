@@ -12,4 +12,15 @@ void main() {
     );
     expect(find.text('Welcome Back'), findsOneWidget);
   });
+
+  testWidgets('Login screen shows credential fields and action button', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: LoginScreen()),
+      ),
+    );
+
+    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.text('Login'), findsOneWidget);
+  });
 }

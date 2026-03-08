@@ -151,6 +151,12 @@ void main() {
           .thenReturn('session@example.com');
       when(() => mockUserSessionService.getCurrentUserUsername())
           .thenReturn('sessionUser');
+      when(() => mockUserSessionService.getCurrentUserRole())
+        .thenReturn('patient');
+      when(() => mockUserSessionService.savePatientId(any()))
+        .thenAnswer((_) async {});
+      when(() => mockGetPatientByUserIdUsecase(tUserId))
+        .thenAnswer((_) async => const Right(tProfile));
       when(() => mockUpdatePatientUsecase(any()))
           .thenAnswer((_) async => const Right(tProfile));
 
@@ -198,6 +204,12 @@ void main() {
           .thenReturn('session@example.com');
       when(() => mockUserSessionService.getCurrentUserUsername())
           .thenReturn('sessionUser');
+      when(() => mockUserSessionService.getCurrentUserRole())
+        .thenReturn('patient');
+      when(() => mockUserSessionService.savePatientId(any()))
+        .thenAnswer((_) async {});
+      when(() => mockGetPatientByUserIdUsecase(tUserId))
+        .thenAnswer((_) async => const Right(tProfile));
       when(() => mockUpdatePatientUsecase(any()))
           .thenAnswer((_) async => const Left(failure));
 
