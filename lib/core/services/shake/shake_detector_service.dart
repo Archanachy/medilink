@@ -10,11 +10,13 @@ class ShakeDetectorService {
   VoidCallback? _onShakeThresholdReached;
   bool _isDialogShowing = false;
   DateTime _lastShakeTime = DateTime.now();
+  double _lastAcceleration = 0;
+  bool _isShaking = false;
 
   static const int _shakeThreshold = 2;
   static const Duration _resetDuration = Duration(seconds: 3);
-  static const double _shakeThresholdGravity = 2.7;
-  static const int _shakeIntervalMs = 500;
+  static const double _shakeThresholdGravity = 15.0; // Higher threshold for actual shakes
+  static const int _shakeIntervalMs = 800; // Minimum time between shake counts
 
   void initialize({required VoidCallback onShakeThresholdReached}) {
     _onShakeThresholdReached = onShakeThresholdReached;
@@ -24,15 +26,26 @@ class ShakeDetectorService {
       final gY = event.y;
       final gZ = event.z;
 
-      // Calculate total acceleration
+      // Calculate total acceleration (remove gravity baseline ~9.8)
       final gForce = sqrt(gX * gX + gY * gY + gZ * gZ);
+      
+      // Calculate the delta from last reading
+      final deltaAcceleration = (gForce - _lastAcceleration).abs();
+      _lastAcceleration = gForce;
 
-      if (gForce > _shakeThresholdGravity) {
+      // Detect a spike in acceleration (shake motion)
+      if (deltaAcceleration > _shakeThresholdGravity && !_isShaking) {
         final now = DateTime.now();
         // Check if enough time has passed since last shake
         if (now.difference(_lastShakeTime).inMilliseconds > _shakeIntervalMs) {
+          _isShaking = true;
           _lastShakeTime = now;
           _handleShake();
+          
+          // Reset shaking flag after a short delay to allow next shake
+          Future.delayed(const Duration(milliseconds: 300), () {
+            _isShaking = false;
+          });
         }
       }
     });

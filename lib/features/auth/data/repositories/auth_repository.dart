@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medilink/core/error/failures.dart';
 import 'package:medilink/core/services/connectivity/network_info.dart';
@@ -84,13 +85,27 @@ class AuthRepository implements IAuthRepository {
   @override
   Future<Either<Failure, bool>> logout() async {
     try {
+      // Logout locally first (always works offline)
       final result = await _authDatasource.logout();
+      
+      // Try to notify server if online (but don't fail if offline)
+      if (await _networkInfo.isConnected) {
+        try {
+          // Call server logout endpoint if implemented
+          // For now, just log that we attempted server logout
+          debugPrint('✅ Logout successful - server notification would go here');
+        } catch (e) {
+          // Server logout failed, but local logout succeeded
+          debugPrint('⚠️ Server logout notification failed but local logout succeeded: $e');
+        }
+      }
+      
       if (result) {
         return const Right(true);
       }
       return const Left(LocalDatabaseFailure(message: "Failed to logout"));
     } catch (e) {
-      return const Left(LocalDatabaseFailure(message: 'Logout failed'));
+      return Left(LocalDatabaseFailure(message: 'Logout failed: $e'));
     }
   }
 

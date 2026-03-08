@@ -35,19 +35,22 @@ class MediLinkApp extends ConsumerWidget {
     ref.watch(lightAutoModeProvider.select((state) => state.enabled));
     final appThemeMode = ref.watch(appThemeModeProvider);
 
-    return ShakeToLogoutWrapper(
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'MediLink',
-        navigatorKey: AppNavigator.key,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'MediLink',
+      navigatorKey: AppNavigator.key,
 
-        // supply both themes
-        theme: getLightTheme(),
-        darkTheme: getDarkTheme(),
+      // supply both themes
+      theme: getLightTheme(),
+      darkTheme: getDarkTheme(),
 
-        themeMode: appThemeMode,
+      themeMode: appThemeMode,
 
-        initialRoute: '/',
+      builder: (context, child) {
+        return ShakeToLogoutWrapper(child: child ?? const SizedBox.shrink());
+      },
+
+      initialRoute: '/',
         routes: {
         '/': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
@@ -162,7 +165,6 @@ class MediLinkApp extends ConsumerWidget {
 
         return null;
       },
-      ),
     );
   }
 }

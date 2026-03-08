@@ -20,4 +20,10 @@ class HiveTableConstant {
   static const String prescriptionTable = 'prescription_table';
   
   static const int medicationTypeId = 11;
+
+  static const int queuedActionTypeId = 15;
+  static const String queuedActionTable = 'queued_action_table';
+
+  static const int userProfileTypeId = 16;
+  static const String userProfileTable = 'user_profile_table';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medilink/app/navigation/app_navigator.dart';
 import 'package:medilink/core/services/shake/shake_detector_service.dart';
 import 'package:medilink/features/auth/presentation/view_model/auth_view_model.dart';
 import 'package:medilink/features/auth/presentation/pages/login_screen.dart';
@@ -30,9 +31,10 @@ class _ShakeToLogoutWrapperState extends ConsumerState<ShakeToLogoutWrapper> {
 
   void _showLogoutDialog() {
     // Ensure dialog is only shown once
-    if (_shakeService.isDialogShowing && mounted) {
+    final navigatorContext = AppNavigator.key.currentContext;
+    if (_shakeService.isDialogShowing && navigatorContext != null) {
       showDialog(
-        context: context,
+        context: navigatorContext,
         barrierDismissible: true,
         builder: (dialogContext) => AlertDialog(
           shape: RoundedRectangleBorder(
@@ -68,14 +70,12 @@ class _ShakeToLogoutWrapperState extends ConsumerState<ShakeToLogoutWrapper> {
                 
                 await ref.read(authViewModelProvider.notifier).logout();
                 
-                if (mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                    (route) => false,
-                  );
-                }
+                AppNavigator.key.currentState?.pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const LoginScreen(),
+                  ),
+                  (route) => false,
+                );
               },
               child: const Text(
                 'Logout',

@@ -9,6 +9,7 @@ import 'package:medilink/core/config/environment.dart';
 import 'package:medilink/core/services/analytics/analytics_service.dart';
 import 'package:medilink/core/services/hive/hive_service.dart';
 import 'package:medilink/core/services/notifications/notification_service.dart';
+import 'package:medilink/core/services/offline_queue/offline_queue_service.dart';
 import 'package:medilink/core/services/storage/user_session_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -44,6 +45,15 @@ Future<void> main() async {
   }
   
   await HiveService().init();
+  
+  // Initialize offline queue service
+  try {
+    await OfflineQueueService().initialize();
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('⚠️  Offline queue initialization failed: $e');
+    }
+  }
   
   // Initialize analytics with error handling
   if (firebaseInitialized) {
