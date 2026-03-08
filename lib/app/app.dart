@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medilink/app/navigation/app_navigator.dart';
 import 'package:medilink/app/theme/theme_mode_provider.dart';
 import 'package:medilink/app/theme/theme_data.dart';
+import 'package:medilink/core/widgets/shake_to_logout_wrapper.dart';
 import 'package:medilink/features/auth/presentation/pages/forgot_password_screen.dart';
 import 'package:medilink/features/auth/presentation/pages/login_screen.dart';
 import 'package:medilink/features/auth/presentation/pages/reset_password_screen.dart';
@@ -34,19 +35,20 @@ class MediLinkApp extends ConsumerWidget {
     ref.watch(lightAutoModeProvider.select((state) => state.enabled));
     final appThemeMode = ref.watch(appThemeModeProvider);
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'MediLink',
-      navigatorKey: AppNavigator.key,
+    return ShakeToLogoutWrapper(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'MediLink',
+        navigatorKey: AppNavigator.key,
 
-      // supply both themes
-      theme: getLightTheme(),
-      darkTheme: getDarkTheme(),
+        // supply both themes
+        theme: getLightTheme(),
+        darkTheme: getDarkTheme(),
 
-      themeMode: appThemeMode,
+        themeMode: appThemeMode,
 
-      initialRoute: '/',
-      routes: {
+        initialRoute: '/',
+        routes: {
         '/': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
@@ -160,6 +162,7 @@ class MediLinkApp extends ConsumerWidget {
 
         return null;
       },
+      ),
     );
   }
 }
